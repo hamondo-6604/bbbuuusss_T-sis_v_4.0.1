@@ -1,55 +1,62 @@
-@extends('layout.app')
+@extends('layouts.app')
 
 @section('content')
-<div class="max-w-3xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6">Edit Seat Layout</h1>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Edit Seat Layout — {{ $seatLayout->layout_name }}</h4>
+        <a href="{{ route('admin.seat-layouts.index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
 
-    <form action="{{ route('admin.seat-layouts.update', $layout->id) }}" method="POST">
-        @csrf
-        @method('PUT')
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form action="{{ route('admin.seat-layouts.update', $seatLayout->id) }}" method="POST">
+                @csrf
+                @method('PUT')
 
-        <div class="mb-4">
-            <label class="block font-semibold mb-1">Layout Name</label>
-            <input type="text" name="layout_name" value="{{ old('layout_name', $layout->layout_name) }}" 
-                class="border rounded w-full px-3 py-2" required>
+                <div class="mb-3">
+                    <label class="form-label">Layout Name</label>
+                    <input type="text" name="layout_name" class="form-control" value="{{ old('layout_name', $seatLayout->layout_name) }}" required>
+                    @error('layout_name') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Rows</label>
+                        <input type="number" name="total_rows" class="form-control" value="{{ old('total_rows', $seatLayout->total_rows) }}" required>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Columns</label>
+                        <input type="number" name="total_columns" class="form-control" value="{{ old('total_columns', $seatLayout->total_columns) }}" required>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Capacity</label>
+                        <input type="number" name="capacity" class="form-control" value="{{ old('capacity', $seatLayout->capacity) }}">
+                        <small class="text-muted">Optional — will be auto-calculated if left blank.</small>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select" required>
+                        <option value="active" {{ old('status', $seatLayout->status) == 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ old('status', $seatLayout->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" rows="4">{{ old('description', $seatLayout->description) }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Update
+                </button>
+            </form>
         </div>
-
-        <div class="mb-4">
-            <label class="block font-semibold mb-1">Bus Type</label>
-            <select name="bus_type_id" class="border rounded w-full px-3 py-2" required>
-                <option value="">-- Select Bus Type --</option>
-                @foreach ($busTypes as $busType)
-                    <option value="{{ $busType->id }}" 
-                        {{ $busType->id == $layout->bus_type_id ? 'selected' : '' }}>
-                        {{ $busType->type_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mb-4 grid grid-cols-2 gap-4">
-            <div>
-                <label class="block font-semibold mb-1">Rows</label>
-                <input type="number" name="rows" value="{{ old('rows', $layout->rows) }}" 
-                    class="border rounded w-full px-3 py-2" required min="1" max="20">
-            </div>
-            <div>
-                <label class="block font-semibold mb-1">Columns</label>
-                <input type="number" name="columns" value="{{ old('columns', $layout->columns) }}" 
-                    class="border rounded w-full px-3 py-2" required min="1" max="10">
-            </div>
-        </div>
-
-        <div class="flex justify-end space-x-2">
-            <a href="{{ route('admin.seat-layouts.index') }}" 
-               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
-               Cancel
-            </a>
-            <button type="submit" 
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                Save Changes
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 @endsection

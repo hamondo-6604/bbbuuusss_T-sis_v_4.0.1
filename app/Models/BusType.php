@@ -11,10 +11,24 @@ class BusType extends Model
 
     protected $fillable = [
         'type_name',
-        'description'
+        'seat_layout_id',
+        'status',
+        'description',
     ];
 
-    public function buses(){
-        return $this->hasMany(Bus::class, 'bus_type_id');
+    // Relationships
+    
+
+    // BusType belongs to SeatLayout
+    public function seatLayout()
+{
+    return $this->belongsTo(\App\Models\SeatLayout::class, 'seat_layout_id');
+}
+
+
+    // BusType has many buses
+    public function buses()
+    {
+        return $this->hasMany(Bus::class);
     }
 }

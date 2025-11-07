@@ -7,13 +7,31 @@ use App\Http\Controllers\BusController;
 use App\Http\Controllers\BusTypeController;
 use App\Http\Controllers\SeatLayoutController;
 
-Route::get('/', [AuthController::class, 'login']);
-Route::post('login_post', [AuthController::class, 'login_post'])->name('login_post');
+/*
+|--------------------------------------------------------------------------
+| Public Routes (Landing Page)
+|--------------------------------------------------------------------------
+*/
 
+// Show the landing page
+Route::get('/', function () {
+    return view('landing.index');
+})->name('landing');
+
+// Login page
+Route::get('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login_post', [AuthController::class, 'login_post'])->name('login_post');
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
 Route::prefix('admin')->middleware('admin')->group(function () {
-    Route::get('dashboard', [DashboardController::class, 'dashboard']);
+    Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.dashboard');
 
-    /* Bus Management */
+    // Bus Management
     Route::resource('buses', BusController::class, [
         'names' => [
             'index' => 'admin.buses.index',
@@ -26,7 +44,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         ]
     ]);
 
-    /* Bus Types Management */
+    // Bus Types Management
     Route::resource('bus-types', BusTypeController::class, [
         'names' => [
             'index' => 'admin.bus-types.index',
@@ -38,6 +56,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         ]
     ]);
 
+    // Seat Layout Management
     Route::resource('seat-layouts', SeatLayoutController::class, [
         'names' => [
             'index' => 'admin.seat-layouts.index',
@@ -51,8 +70,19 @@ Route::prefix('admin')->middleware('admin')->group(function () {
 });
 
 
-Route::group(['middleware' => 'user'], function () {
-    Route::get('user/dashboard', [DashboardController::class, 'dashboard']);
+/*
+|--------------------------------------------------------------------------
+| User Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware('user')->group(function () {
+    Route::get('user/dashboard', [DashboardController::class, 'dashboard'])->name('user.dashboard');
 });
 
-Route::get('logout', [AuthController::class, 'logout']);
+
+/*
+|--------------------------------------------------------------------------
+| Logout
+|--------------------------------------------------------------------------
+*/
+Route::get('logout', [AuthController::class, 'logout'])->name('logout');

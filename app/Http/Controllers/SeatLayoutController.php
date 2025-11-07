@@ -3,73 +3,73 @@
 namespace App\Http\Controllers;
 
 use App\Models\SeatLayout;
-use App\Models\BusType;
 use Illuminate\Http\Request;
 
 class SeatLayoutController extends Controller
 {
     public function index()
     {
-        $layouts = SeatLayout::with('busType')->get();
-        return view('admin.seat_layout.index', compact('layouts'));
+        $seatLayouts = SeatLayout::latest()->paginate(10);
+        return view('admin.seat_layout.index', compact('seatLayouts'));
     }
 
     public function create()
     {
-        $busTypes = BusType::all();
-        return view('admin.seat_layout.create', compact('busTypes'));
+        return view('admin.seat_layout.create');
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'layout_name' => 'required|string|max:100',
-            'bus_type_id' => 'required|exists:bus_types,id',
-            'rows'        => 'required|integer|min:1|max:20',
-            'columns'     => 'required|integer|min:1|max:10',
+        $validated = $request->validate([
+            'layout_name' => 'required|string|max:255',
+            'total_rows' => 'required|integer|min:1',
+            'total_columns' => 'required|integer|min:1',
+            'status' => 'required|in:active,inactive',
+            'description' => 'nullable|string',
         ]);
 
-        $seats = [];
-        $alphabet = range('A','Z');
+        // 🔹 Auto-calculate capacity
+        $validated['capacity'] = $request->total_rows * $request->total_columns;
 
-        for($r = 0; $r < $request->rows; $r++){
-            for($c = 1; $c <= $request->columns; $c++){
-                $seatNumber = $alphabet[$r] . $c;
-                $seats[$seatNumber] = 'available';
-            }
-        }
+        SeatLayout::create($validated);
 
-
-        SeatLayout::create([
-            'layout_name' => $request->layout_name,
-            'bus_type_id' => $request->bus_type_id,
-            'rows'        => $request->rows,
-            'columns'     => $request->columns,
-            'seats'       => $seats, // 👈 auto-filled JSON
-        ]);
-        return redirect()
-            ->route('admin.seat-layouts.index')
-            ->with('success', 'Seat layout added successfully!');
+        return redirect()->route('admin.seat-layouts.index')
+            ->with('success', 'Seat layout created successfully.');
     }
 
     public function edit($id)
     {
-        $layout = SeatLayout::findOrFail($id);
-        $busTypes = BusType::all();
-        return view('admin.seat_layout.edit', compact('layout', 'busTypes'));
+        $seatLayout = SeatLayout::findOrFail($id);
+        return view('admin.seat_layout.edit', compact('seatLayout'));
     }
 
     public function update(Request $request, $id)
     {
-        $layout = SeatLayout::findOrFail($id);
-        $layout->update($request->all());
+        $seatLayout = SeatLayout::findOrFail($id);
 
-        return redirect()->route('admin.seat-layouts.index')->with('success', 'Seat layout updated successfully!');
+        $validated = $request->validate([
+            'layout_name' => 'required|string|max:255',
+            'total_rows' => 'required|integer|min:1',
+            'total_columns' => 'required|integer|min:1',
+            'status' => 'required|in:active,inactive',
+            'description' => 'nullable|string',
+        ]);
+
+        // 🔹 Auto-calculate capacity on update
+        $validated['capacity'] = $request->total_rows * $request->total_columns;
+
+        $seatLayout->update($validated);
+
+        return redirect()->route('admin.seat-layouts.index')
+            ->with('success', 'Seat layout updated successfully.');
     }
 
     public function destroy($id)
     {
-        SeatLayout::findOrFail($id)->delete();
-        return redirect()->route('admin.seat-layouts.index')->with('success', 'Seat layout deleted.');
+        $seatLayout = SeatLayout::findOrFail($id);
+        $seatLayout->delete();
+
+        return redirect()->route('admin.seat-layouts.index')
+            ->with('success', 'Seat layout deleted successfully.');
     }
 }

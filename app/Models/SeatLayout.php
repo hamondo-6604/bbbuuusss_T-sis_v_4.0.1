@@ -10,24 +10,31 @@ class SeatLayout extends Model
     use HasFactory;
 
     protected $fillable = [
-        'bus_type_id',
         'layout_name',
-        'rows',
-        'columns',
-        'seats'
+        'total_rows',
+        'total_columns',
+        'capacity',
+        'layout_map',
+        'status',
+        'description',
     ];
 
-    protected $casts = [ 
-        'seats' => 'array',
+    protected $casts = [
+        'layout_map' => 'array', // cast JSON to array
     ];
 
-    public function busType(){
-        return $this->belongsTo(BusType::class,'bus_type_id');
+    // Relationships
+
+    // A seat layout can have many bus types
+    public function busTypes()
+    {
+        return $this->hasMany(\App\Models\BusType::class, 'seat_layout_id');
     }
 
+
+    // A seat layout can also be assigned directly to buses
     public function buses()
     {
-        return $this->hasMany(Bus::class,'seat_layout_id');
+        return $this->hasMany(Bus::class);
     }
-
 }

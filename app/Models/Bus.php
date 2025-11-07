@@ -13,21 +13,24 @@ class Bus extends Model
         'bus_number',
         'bus_name',
         'bus_type_id',
+        'seat_layout_id',
         'total_seats',
         'bus_img',
         'status',
+        'description',
     ];
 
+    // Relationships
 
-    // A Bus belongs to a Bus Type (e.g. Deluxe, Sleeper, AC)
-
+    // Bus belongs to BusType
     public function type()
     {
         return $this->belongsTo(BusType::class, 'bus_type_id');
     }
 
+    // Bus belongs to SeatLayout
     public function seatLayout()
     {
-        return $this->belongsTo(SeatLayout::class,'seat_layout_id');
+        return $this->belongsTo(SeatLayout::class, 'seat_layout_id');
     }
 }

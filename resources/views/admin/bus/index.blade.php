@@ -1,118 +1,72 @@
-@extends('layout.app')
+@extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-        <h2 class="mb-2">🚌 All Buses</h2>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">All Buses</h4>
         <a href="{{ route('admin.buses.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Add New Bus
         </a>
     </div>
 
-    <!-- Success Message -->
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0 table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0">
-                <thead class="table-dark text-center">
+    <div class="card">
+        <div class="card-body table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
                     <tr>
-                        <th>#</th>
+                        <th>ID</th>
                         <th>Image</th>
-                        <th>Bus Name / Model</th>
+                        <th>Bus Name</th>
                         <th>Bus Number</th>
                         <th>Type</th>
-                        <th>Seat Layout</th>
-                        <th>Capacity</th>
+                        <th>Layout</th>
+                        <th>Total Seats</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($buses as $bus)
-                        <tr class="text-center">
+                        <tr>
                             <td>{{ $bus->id }}</td>
-
-                            <!-- Bus Image -->
                             <td>
                                 @if($bus->bus_img)
-                                    <img src="{{ asset('storage/' . $bus->bus_img) }}" 
-                                         alt="Bus Image" 
-                                         width="70" height="50" 
-                                         class="rounded border shadow-sm">
+                                    <img src="{{ asset('storage/' . $bus->bus_img) }}" alt="Bus" width="60" height="40" class="rounded">
                                 @else
-                                    <span class="text-muted fst-italic">No Image</span>
+                                    <span class="text-muted">No image</span>
                                 @endif
                             </td>
-
                             <td>{{ $bus->bus_name }}</td>
                             <td>{{ $bus->bus_number }}</td>
                             <td>{{ $bus->type->type_name ?? 'N/A' }}</td>
-
-                            <!-- Seat Layout -->
+                            <td>{{ $bus->seatLayout->layout_name ?? 'N/A' }}</td>
+                            <td>{{ $bus->total_seats }}</td>
                             <td>
-                                @if($bus->seatLayout)
-                                    {{ $bus->seatLayout->layout_name }} 
-                                    <span class="text-muted small d-block">
-                                        {{ $bus->seatLayout->rows }}×{{ $bus->seatLayout->columns }}
-                                    </span>
-                                @else
-                                    <span class="text-muted">N/A</span>
-                                @endif
-                            </td>
-
-                            <!-- Capacity -->
-                            <td><strong>{{ $bus->total_seats }}</strong></td>
-
-                            <!-- Status -->
-                            <td>
-                                <span class="badge {{ $bus->status === 'active' ? 'bg-success' : 'bg-secondary' }}">
+                                <span class="badge bg-{{ $bus->status == 'active' ? 'success' : ($bus->status == 'inactive' ? 'danger' : 'warning') }}">
                                     {{ ucfirst($bus->status) }}
                                 </span>
                             </td>
-
-                            <!-- Actions -->
                             <td>
-                                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                    <!-- 👁️ View -->
-                                    <a href="{{ route('admin.buses.show', $bus->id) }}" 
-                                       class="btn btn-sm btn-info text-white">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-
-                                    <!-- ✏️ Edit -->
-                                    <a href="{{ route('admin.buses.edit', $bus->id) }}" 
-                                       class="btn btn-sm btn-warning text-white">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-
-                                    <!-- 🗑️ Delete -->
-                                    <form action="{{ route('admin.buses.destroy', $bus->id) }}" method="POST" 
-                                          onsubmit="return confirm('Are you sure you want to delete this bus?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                                <a href="{{ route('admin.buses.edit', $bus->id) }}" class="btn btn-sm btn-info">Edit</a>
+                                <form action="{{ route('admin.buses.destroy', $bus->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this bus?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </form>
                             </td>
                         </tr>
                     @empty
-                        <tr> 
-                            <td colspan="9" class="text-center text-muted py-3">No buses found.</td>
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">No buses found.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <!-- Pagination (if using paginate() in controller) -->
-    <div class="mt-3 d-flex justify-content-center">
-        {{ $buses->links() }}
     </div>
 </div>
 @endsection

@@ -3,66 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusType;
+use App\Models\SeatLayout;
 use Illuminate\Http\Request;
 
 class BusTypeController extends Controller
 {
-    // List all bus types
     public function index()
     {
-        $busTypes = BusType::all(); // ✅ make sure variable name matches Blade
-        return view('admin.bus-types.index', compact('busTypes'));
+        $busTypes = \App\Models\BusType::with('seatLayout')->latest()->paginate(10);
+        $seatLayouts = \App\Models\SeatLayout::all();
+
+        return view('admin.bus-types.index', compact('busTypes', 'seatLayouts'));
     }
 
-    // Show form to create a new bus type
+
     public function create()
-    {
-        return view('admin.bus-types.create');
-    }
+{
+    // These might be used in your form dropdowns
+    $seatLayouts = \App\Models\SeatLayout::where('status', 'active')->get();
+    $busTypes = \App\Models\BusType::all(); // 👈 Add this line
 
-    // Store new bus type
+    return view('admin.bus-types.create', compact('seatLayouts', 'busTypes'));
+}
+
     public function store(Request $request)
     {
         $request->validate([
-            'type_name' => 'required|string|max:255',
+            'type_name' => 'required|unique:bus_types,type_name',
+            'seat_layout_id' => 'nullable|exists:seat_layouts,id',
+            'status' => 'required|in:active,inactive',
             'description' => 'nullable|string',
         ]);
 
-        BusType::create([
-        'type_name' => $request->type_name, // 👈 use type_name
-        'description' => $request->description,
-    ]);
-
-        return redirect()->route('admin.bus-types.index')
-                         ->with('success', 'Bus Type added successfully.');
+        BusType::create($request->all());
+        return redirect()->route('admin.bus-types.index')->with('success', 'Bus type added successfully!');
     }
 
-    // Show form to edit a bus type
-    public function edit(BusType $busType)
+    public function edit($id)
     {
-        return view('admin.bus-types.edit', compact('busType'));
+        $busType = BusType::findOrFail($id);
+        $seatLayouts = SeatLayout::where('status', 'active')->get();
+        return view('admin.bus-types.edit', compact('busType', 'seatLayouts'));
     }
 
-    // Update bus type
-    public function update(Request $request, BusType $busType)
+    public function update(Request $request, $id)
     {
+        $busType = BusType::findOrFail($id);
+
         $request->validate([
-            'type_name' => 'required|string|max:255',
+            'type_name' => 'required|unique:bus_types,type_name,' . $busType->id,
+            'seat_layout_id' => 'nullable|exists:seat_layouts,id',
+            'status' => 'required|in:active,inactive',
             'description' => 'nullable|string',
         ]);
 
-        $busType->update($request->only(['type_name', 'description']));
-
-        return redirect()->route('admin.bus-types.index')
-                         ->with('success', 'Bus Type updated successfully.');
+        $busType->update($request->all());
+        return redirect()->route('admin.bus-types.index')->with('success', 'Bus type updated successfully!');
     }
 
-    // Delete bus type
-    public function destroy(BusType $busType)
+    public function destroy($id)
     {
+        $busType = BusType::findOrFail($id);
         $busType->delete();
-
-        return redirect()->route('admin.bus-types.index')
-                         ->with('success', 'Bus Type deleted successfully.');
+        return redirect()->route('admin.bus-types.index')->with('success', 'Bus type deleted successfully!');
     }
 }
