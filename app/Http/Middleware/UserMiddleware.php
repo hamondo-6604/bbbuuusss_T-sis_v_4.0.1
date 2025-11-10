@@ -12,20 +12,19 @@ class UserMiddleware
      * Handle an incoming request.
      *
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
 
         if (Auth::check()) {
 
             if (Auth::user()->role === 'customer') {
                 return $next($request);
-            } else {
-                Auth::logout();
-                return redirect(url('/'));
+            // } else {
+            //     return redirect()->route('landing')->with('error','Access denied.');
             }
-        }else{
-            Auth::logout();
-            return redirect(url('/'));
         }
+
+        // Guest -> redirect to landing page
+        return redirect()->route('landing')->with('error', 'Please log in.');
     }
 }

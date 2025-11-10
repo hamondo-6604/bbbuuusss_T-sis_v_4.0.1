@@ -12,20 +12,19 @@ class AdminMiddleware
      * Handle an incoming request.
      *
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
 
         if (Auth::check()) {
 
             if (Auth::user()->role === 'admin') {
                 return $next($request);
-            } else {
-                Auth::logout();
-                return redirect('/');
-            }
-        }else{
-            Auth::logout();
-            return redirect('/');
+            // } else {
+            //     return redirect()->route('landing')->with('error','Access denied');
+             }
         }
+
+        // Guest -> redirect to landing page
+        return redirect()->route('landing')->with('error','Please login to access this page.');
     }
 }

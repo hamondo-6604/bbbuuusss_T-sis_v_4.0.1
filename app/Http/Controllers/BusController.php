@@ -96,7 +96,7 @@ class BusController extends Controller
             'description' => $request->description,
         ]);
 
-        return redirect()->route('admin.bus.index')->with('success', 'Bus updated successfully!');
+        return redirect()->route('admin.buses.index')->with('success', 'Bus updated successfully!');
     }
 
     public function destroy($id)

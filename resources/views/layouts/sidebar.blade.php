@@ -101,12 +101,17 @@
         @endif
 
         <li>
-            <a href="{{ url('logout ') }}">
+            <a href="{{ route('logout') }}"
+                onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();">
                 <span class="icon">
-                    <ion-icon name="people-outline"></ion-icon>
+                    <ion-icon name="log-out-outline"></ion-icon>
                 </span>
                 <span class="title">Sign Out</span>
             </a>
+
+            <form id="sidebar-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
         </li>
     </ul>
 </div>

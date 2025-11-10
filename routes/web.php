@@ -7,21 +7,37 @@ use App\Http\Controllers\BusController;
 use App\Http\Controllers\BusTypeController;
 use App\Http\Controllers\SeatLayoutController;
 
+
 /*
 |--------------------------------------------------------------------------
-| Public Routes (Landing Page)
+| Public Routes (Guest Only)
 |--------------------------------------------------------------------------
 */
 
-// Show the landing page
-Route::get('/', function () {
-    return view('landing.index');
-})->name('landing');
+// Landing page visible to all guests
 
-// Login page
-Route::get('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/login_post', [AuthController::class, 'login_post'])->name('login_post');
+Route::get('/', [AuthController::class,'landing'])->name('landing');
 
+
+Route::middleware('guest')->group(function () {
+
+    Route::get('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login_post', [AuthController::class, 'login_post'])->name('login_post');
+
+    // Register page
+    Route::get('/register',[AuthController::class,'register'])->name('register');
+    Route::post('/register',[AuthController::class,'register_post'])->name('register_post');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Users (Logout)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+    Route::post('/logout',[AuthController::class,'logout'])->name('logout');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -78,11 +94,3 @@ Route::prefix('admin')->middleware('admin')->group(function () {
 Route::middleware('user')->group(function () {
     Route::get('user/dashboard', [DashboardController::class, 'dashboard'])->name('user.dashboard');
 });
-
-
-/*
-|--------------------------------------------------------------------------
-| Logout
-|--------------------------------------------------------------------------
-*/
-Route::get('logout', [AuthController::class, 'logout'])->name('logout');
