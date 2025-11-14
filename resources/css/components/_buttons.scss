@@ -1,3 +1,7 @@
+@use '../abstracts/mixins' as *;
+@use '../abstracts/variable' as *;
+@use '../abstracts/function' as *;
+
 %btn {
   position: relative;
   padding: 5px 10px;

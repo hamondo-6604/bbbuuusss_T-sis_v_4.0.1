@@ -7,42 +7,42 @@ use App\Http\Controllers\Admin\Bus\BusController;
 use App\Http\Controllers\Admin\Bus\BusTypeController;
 use App\Http\Controllers\Admin\Bus\SeatLayoutController;
 use App\Http\Controllers\Admin\Booking\BookingController;
-// use App\Http\Controllers\Admin\Booking\PaymentController;
 use App\Http\Controllers\Admin\Booking\ReportController;
+use App\Http\Controllers\Admin\User\UserManagementController;
+
 /*
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | Public Routes (Guest Only)
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 */
 
-// Landing page visible to all guests
 Route::get('/', [AuthController::class, 'landing'])->name('landing');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login_post', [AuthController::class, 'login_post'])->name('login_post');
 
-    // Register page
     Route::get('/register', [AuthController::class, 'register'])->name('register');
-    Route::post('/register', [AuthController::class, 'register_post'])->name('register_post');
+    Route::post('/register_post', [AuthController::class, 'register_post'])->name('register_post');
 });
 
 /*
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | Authenticated Users (Logout)
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
 /*
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | Admin Routes
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 */
 Route::prefix('admin')->middleware('admin')->group(function () {
-    // Admin Dashboard
+
+    // Dashboard
     Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('admin.dashboard');
 
     // Bus Management
@@ -83,43 +83,65 @@ Route::prefix('admin')->middleware('admin')->group(function () {
     ]);
 
     /*
-    |---------------------------------------------------------------------------
-    | Booking Management Routes
-    |---------------------------------------------------------------------------
+    |--------------------------------------------------------------------------
+    | Booking Management
+    |--------------------------------------------------------------------------
     */
+    Route::prefix('bookings')->group(function () {
 
-    // All Bookings (View, Edit, Delete)
-    Route::resource('bookings', BookingController::class, [
-        'names' => [
-            'index' => 'admin.bookings.index',      // List all bookings
-            'create' => 'admin.bookings.create',    // Create new booking
-            'store' => 'admin.bookings.store',      // Store new booking
-            'show' => 'admin.bookings.show',        // View specific booking
-            'edit' => 'admin.bookings.edit',        // Edit booking
-            'update' => 'admin.bookings.update',    // Update booking
-            'destroy' => 'admin.bookings.destroy',  // Delete booking
-        ]
-    ]);
-    // Completed Bookings
-    Route::get('booking/status/completed', [BookingController::class, 'completed'])->name('admin.bookings.completed');
+        // CRUD
+        Route::resource('/', BookingController::class, [
+            'names' => [
+                'index' => 'admin.bookings.index',
+                'create' => 'admin.bookings.create',
+                'store' => 'admin.bookings.store',
+                'show' => 'admin.bookings.show',
+                'edit' => 'admin.bookings.edit',
+                'update' => 'admin.bookings.update',
+                'destroy' => 'admin.bookings.destroy',
+            ]
+        ])->parameters(['' => 'booking']); // Fix route parameter naming
 
-    // Add the pending bookings route
-    Route::get('booking/status/pending', [BookingController::class, 'pending'])->name('admin.bookings.pending');
+        // Status Views
+        Route::get('status/pending', [BookingController::class, 'pending'])->name('admin.bookings.status.pending');
+        Route::get('status/completed', [BookingController::class, 'completed'])->name('admin.bookings.status.completed');
+        Route::get('status/cancelled', [BookingController::class, 'cancelled'])->name('admin.bookings.status.cancelled');
 
-    // Cancelled Bookings (View and Manage)
-    Route::get('booking/status/cancelled', [BookingController::class, 'cancelled'])->name('admin.bookings.cancelled');
+        // Reports
+        Route::get('reports', [ReportController::class, 'bookingReports'])->name('admin.bookings.reports');
 
-    // Reports (Booking Reports, Revenue, etc.)
-    Route::get('bookings/reports', [ReportController::class, 'bookingReports'])->name('admin.bookings.reports');
+        // Notifications
+        Route::get('notifications', [BookingController::class, 'notifications'])->name('admin.bookings.notifications');
+    });
 
-    // Notifications (Manage and Resend Booking Notifications)
-    Route::get('bookings/notifications', [BookingController::class, 'notifications'])->name('admin.bookings.notifications');
+    // Users Management
+    Route::prefix('users')->group(function () {
+
+        // Custom pages first (avoid conflict with resource routes)
+        Route::get('roles', [UserManagementController::class, 'roles'])->name('admin.user-roles.index');
+        Route::get('activity', [UserManagementController::class, 'activity'])->name('admin.users.activity');
+        Route::get('blocked', [UserManagementController::class, 'blocked'])->name('admin.users.blocked');
+        Route::get('bulk', [UserManagementController::class, 'bulk'])->name('admin.users.bulk');
+
+        // CRUD for Users (exclude show() to prevent conflicts)
+        Route::resource('/', UserManagementController::class)
+            ->except(['show'])
+            ->names([
+                'index' => 'admin.users.index',
+                'create' => 'admin.users.create',
+                'store' => 'admin.users.store',
+                'edit' => 'admin.users.edit',
+                'update' => 'admin.users.update',
+                'destroy' => 'admin.users.destroy',
+            ])
+            ->parameters(['' => 'user']);
+    });
 });
 
 /*
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | User Routes
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 */
 Route::middleware('user')->group(function () {
     Route::get('user/dashboard', [DashboardController::class, 'dashboard'])->name('user.dashboard');

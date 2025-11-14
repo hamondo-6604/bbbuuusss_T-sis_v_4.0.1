@@ -1,3 +1,6 @@
+@use '../../components/buttons' as *;
+@use '../../abstracts/variable' as *;
+@use '../../abstracts/mixins' as *;
 .details {
   position: relative;
   width: 100%;

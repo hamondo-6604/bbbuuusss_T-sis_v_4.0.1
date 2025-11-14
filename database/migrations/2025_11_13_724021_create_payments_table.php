@@ -10,11 +10,14 @@ class CreatePaymentsTable extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
-            $table->decimal('amount', 8, 2); // Amount paid
-            $table->string('payment_method'); // e.g., credit card, PayPal, etc.
-            $table->string('status')->default('pending'); // pending, completed, failed, refunded
+            $table->unsignedBigInteger('booking_id'); // must be unsigned
+            $table->decimal('amount', 10, 2);
             $table->timestamps();
+
+            $table->foreign('booking_id')
+                ->references('id')
+                ->on('bookings')
+                ->onDelete('cascade');
         });
     }
 

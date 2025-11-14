@@ -19,8 +19,6 @@ class UserMiddleware
 
             if (Auth::user()->role === 'customer') {
                 return $next($request);
-            // } else {
-            //     return redirect()->route('landing')->with('error','Access denied.');
             }
         }
 

@@ -5,26 +5,39 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;  // For generating booking reference
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
     use HasFactory, SoftDeletes;
 
-    // Defining the attributes that are mass assignable
+    // Mass assignable fields
     protected $fillable = [
-        'user_id', 'bus_id', 'route_id', 'seat_number', 'seat_type', 'status', 
-        'departure_time', 'arrival_time', 'amount_paid', 'payment_status', 'booking_reference',
+        'user_id',
+        'bus_id',
+        'route_id',
+        'trip_id',
+        'seat_id',
+        'seat_number',
+        'seat_type',
+        'status',
+        'departure_time',
+        'arrival_time',
+        'amount_paid',
+        'payment_status',
+        'booking_reference',
+        'cancelled_at',
     ];
 
-    // Custom attribute casting, for example, casting timestamps if needed
+    // Attribute casting
     protected $casts = [
         'departure_time' => 'datetime',
         'arrival_time' => 'datetime',
         'cancelled_at' => 'datetime',
+        'amount_paid' => 'decimal:2',
     ];
 
-    // Defining relationships
+    // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -35,55 +48,52 @@ class Booking extends Model
         return $this->belongsTo(Bus::class);
     }
 
-    // public function route()
-    // {
-    //     return $this->belongsTo(Route::class);
-    // }
-
-    // public function payment()
-    // {
-    //     return $this->hasOne(BookingPayment::class);
-    // }
-
-    // public function seats()
-    // {
-    //     return $this->hasMany(BookingSeat::class);
-    // }
-
-    // public function logs()
-    // {
-    //     return $this->hasMany(BookingLog::class);
-    // }
-
-    // public function notifications()
-    // {
-    //     return $this->hasMany(BookingNotification::class);
-    // }
-
-    // Accessor to format the amount paid (if necessary)
-    public function getAmountPaidAttribute($value)
+    public function route()
     {
-        return number_format($value, 2);
+        return $this->belongsTo(Route::class);
     }
 
-    // Mutator to ensure booking_reference is unique and automatically generated
-    public static function boot()
+    public function trip()
+    {
+        return $this->belongsTo(Trip::class);
+    }
+
+    public function seat()
+    {
+        return $this->belongsTo(Seat::class);
+    }
+
+    // Automatically generate unique booking_reference
+    protected static function boot()
     {
         parent::boot();
 
-        // Automatically generate booking_reference on creation
         static::creating(function ($booking) {
             if (empty($booking->booking_reference)) {
-                $booking->booking_reference = strtoupper(Str::random(10));  // Example: ABC1234567
+                $booking->booking_reference = strtoupper(Str::random(10));
             }
         });
     }
 
-    // Custom query scope for filtering pending bookings (if you want to fetch them easily)
+    // Query scopes for easy filtering
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    // Add any other custom logic (if needed)
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', 'cancelled');
+    }
+
+    // Accessors
+    public function getAmountPaidAttribute($value)
+    {
+        return number_format($value, 2);
+    }
 }

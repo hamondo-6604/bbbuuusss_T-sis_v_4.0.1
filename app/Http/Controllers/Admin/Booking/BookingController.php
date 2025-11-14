@@ -3,101 +3,105 @@
 namespace App\Http\Controllers\Admin\Booking;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use Illuminate\Http\Request;
+use App\Models\Booking;
 
 class BookingController extends Controller
 {
-    // Show all bookings
+    // List all bookings
     public function index()
     {
-        // Paginate bookings with 10 per page (adjust as needed)
-        $bookings = Booking::paginate(10);
-
+        $bookings = Booking::latest()->paginate(20);
         return view('admin.booking_management.booking.index', compact('bookings'));
     }
 
-    // Show the form to create a new booking
+    // Show form to create a booking
     public function create()
     {
         return view('admin.booking_management.booking.create');
     }
 
-    // Store a newly created booking
+    // Store new booking
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'bus_id' => 'required|exists:buses,id',
-            'seat_number' => 'required|integer',
-            'departure_time' => 'required|date',
-            // Add more validation as per your requirements
+            'seat_number' => 'nullable|string',
+            'seat_type' => 'nullable|string',
+            'status' => 'required|in:pending,confirmed,cancelled,completed',
+            'departure_time' => 'nullable|date',
+            'arrival_time' => 'nullable|date',
+            'amount_paid' => 'nullable|numeric',
+            'payment_status' => 'nullable|string',
         ]);
 
-        Booking::create($validated);
-        return redirect()->route('admin.bookings.index')->with('success', 'Booking created successfully!');
+        Booking::create($data);
+
+        return redirect()->route('admin.bookings.index')->with('success', 'Booking created successfully.');
     }
 
-    // Show the specific booking
+    // Show single booking
     public function show(Booking $booking)
     {
         return view('admin.booking_management.booking.show', compact('booking'));
     }
 
-    // Show the form to edit a booking
+    // Show form to edit booking
     public function edit(Booking $booking)
     {
         return view('admin.booking_management.booking.edit', compact('booking'));
     }
 
-    // Update the booking details
+    // Update booking
     public function update(Request $request, Booking $booking)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'bus_id' => 'required|exists:buses,id',
-            'seat_number' => 'required|integer',
-            'departure_time' => 'required|date',
-            // Add more validation as needed
+        $data = $request->validate([
+            'seat_number' => 'nullable|string',
+            'seat_type' => 'nullable|string',
+            'status' => 'required|in:pending,confirmed,cancelled,completed',
+            'departure_time' => 'nullable|date',
+            'arrival_time' => 'nullable|date',
+            'amount_paid' => 'nullable|numeric',
+            'payment_status' => 'nullable|string',
         ]);
 
-        $booking->update($validated);
-        return redirect()->route('admin.bookings.index')->with('success', 'Booking updated successfully!');
+        $booking->update($data);
+
+        return redirect()->route('admin.bookings.index')->with('success', 'Booking updated successfully.');
     }
 
-    // Delete a booking
+    // Delete booking
     public function destroy(Booking $booking)
     {
         $booking->delete();
-        return redirect()->route('admin.bookings.index')->with('success', 'Booking deleted successfully!');
+        return redirect()->route('admin.bookings.index')->with('success', 'Booking deleted successfully.');
     }
 
-    // Show pending bookings
+    // Status views
     public function pending()
     {
-        $pendingBookings = Booking::where('status', 'pending')->paginate(10);
+        $pendingBookings = Booking::where('status', 'pending')->latest()->paginate(20);
         return view('admin.booking_management.status.pending', compact('pendingBookings'));
     }
 
-    // Show cancelled bookings
-    public function cancelled()
-    {
-        $cancelledBookings = Booking::where('status', 'cancelled')->paginate(10);
-        return view('admin.booking_management.status.cancelled', compact('cancelledBookings'));
-    }
-
-    // Show completed bookings
     public function completed()
     {
-        $completedBookings = Booking::where('status', 'pending')->paginate(10);  // This should be completed, not pending
+        $completedBookings = Booking::where('status', 'completed')->latest()->paginate(20);
         return view('admin.booking_management.status.completed', compact('completedBookings'));
     }
 
+    public function cancelled()
+    {
+        $cancelledBookings = Booking::where('status', 'cancelled')->latest()->paginate(20);
+        return view('admin.booking_management.status.cancelled', compact('cancelledBookings'));
+    }
 
-    // Manage booking notifications (re-send, etc.)
+
+    // Notifications placeholder
     public function notifications()
     {
-        // You can implement sending notifications logic here (e.g., sending email or SMS)
+        // Implement logic to list or resend booking notifications
         return view('admin.booking_management.booking.notifications');
     }
 }

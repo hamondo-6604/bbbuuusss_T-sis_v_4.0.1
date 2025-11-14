@@ -1,3 +1,7 @@
+@use '../abstracts/variable' as *;
+@use '../abstracts/mixins' as *;      // if it uses mixins
+@use '../abstracts/function' as *;    // if it uses functions
+
 /* ===================== Buses Table ===================== */
 .card-body.table-responsive {
   background: var(--white);

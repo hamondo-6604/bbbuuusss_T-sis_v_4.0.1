@@ -8,13 +8,12 @@
 
     <title>BBS | Dashboard</title>
 
-    <!-- ======= Styles ====== -->
-    @vite('resources/css/app.scss')
+    <!-- ======= Styles & Scripts ====== -->
+    @vite(['resources/css/app.scss', 'resources/js/app.js'])
 </head>
 
 <body>
     <div class="container">
-
         @include('layouts.sidebar')
 
         <div class="main">
@@ -24,7 +23,6 @@
         </div>
 
         @include('layouts.footer')
-
     </div>
 </body>
 

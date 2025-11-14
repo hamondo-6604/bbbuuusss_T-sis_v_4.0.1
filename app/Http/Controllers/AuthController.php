@@ -9,22 +9,25 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-
+    // Landing page
     public function landing()
     {
         return view('landing.index');
     }
 
+    // Show login form
     public function login()
     {
         return view('auth.login');
     }
 
+    // Show registration form
     public function register()
     {
         return view('auth.register');
     }
 
+    // Handle registration
     public function register_post(Request $request)
     {
         $request->validate([
@@ -38,35 +41,56 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'customer',
+            'role' => 'customer',   // default role
+            'status' => 'active',   // default status
         ]);
 
         return redirect()->route('login')->with('success', 'Registration Successful!');
     }
 
+    // Handle login
     public function login_post(Request $request)
     {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password], true)) {
             $user = Auth::user();
 
-            if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            } else if ($user->role === 'customer') {
-                return redirect()->route('landing');
-            } else {
-                return redirect('/')->with('error', 'No Available Email.');
+            // Check if user is blocked
+            if ($user->status === 'blocked') {
+                Auth::logout();
+                return redirect()->back()->with('error', 'Your account is blocked.');
             }
-        } else {
-            return redirect()->back()->with('error', 'Invalid Credentials.');
+
+            // Redirect based on role
+            switch ($user->role) {
+                case 'admin':
+                    return redirect()->route('admin.dashboard');
+                case 'customer':
+                    return redirect()->route('landing');
+                case 'driver':
+                    return redirect()->route('driver.dashboard'); // future route
+                default:
+                    Auth::logout();
+                    return redirect('/')->with('error', 'Role not recognized.');
+            }
         }
 
-        // $pass = Hash::make('123456789');
-        // dd($pass);
+        return redirect()->back()->with('error', 'Invalid Credentials.');
     }
 
+    // Handle logout
     public function logout(Request $request)
     {
         Auth::logout();
+
+        // Invalidate session and regenerate CSRF token
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }

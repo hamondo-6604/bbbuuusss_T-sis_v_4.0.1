@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid" style="background: red">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">All Buses</h4>
             <a href="{{ route('admin.buses.create') }}" class="btn btn-primary">
