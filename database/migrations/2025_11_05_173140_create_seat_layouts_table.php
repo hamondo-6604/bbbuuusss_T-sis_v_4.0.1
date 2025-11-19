@@ -6,25 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
-    {
-        Schema::create('seat_layouts', function (Blueprint $table) {
-            $table->id();
-            $table->string('layout_name');
-            $table->integer('total_rows');
-            $table->integer('total_columns');
-            $table->integer('capacity')->nullable();
-            $table->string('status')->default('active');
-            $table->text('description')->nullable();
-            $table->timestamps();
+  public function up(): void
+  {
+    Schema::create('seat_layouts', function (Blueprint $table) {
+      $table->id();
+      $table->string('layout_name');
+      $table->integer('total_rows');
+      $table->integer('total_columns');
+      $table->integer('capacity')->nullable();
 
-            // ✅ Prevent duplicates
-            $table->unique(['layout_name', 'total_rows', 'total_columns']);
-        });
-    }
+      // ✅ FIX: Added the missing column as a JSON type
+      $table->json('layout_map')->nullable();
 
-    public function down(): void
-    {
-        Schema::dropIfExists('seat_layouts');
-    }
+      $table->string('status')->default('active');
+      $table->text('description')->nullable();
+      $table->timestamps();
+
+      // Prevent duplicates
+      $table->unique(['layout_name', 'total_rows', 'total_columns']);
+    });
+  }
+
+  public function down(): void
+  {
+    Schema::dropIfExists('seat_layouts');
+  }
 };

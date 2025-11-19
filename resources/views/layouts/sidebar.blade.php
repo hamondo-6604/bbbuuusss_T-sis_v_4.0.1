@@ -298,7 +298,7 @@
       <li>
         <a href="{{ url('user/dashboard') }}">
           <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-          <span class="title">User Dashboard</span>
+          <span class="title">Dashboard</span>
         </a>
       </li>
 

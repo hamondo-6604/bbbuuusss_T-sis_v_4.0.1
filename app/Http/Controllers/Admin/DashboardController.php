@@ -15,7 +15,7 @@ class DashboardController extends Controller
             return view('dashboard.admin_list');
 
         }else if($user->role === 'customer'){
-            return view('dashboard.user_list');
+            return view('dashboard.passenger_list');
         }
     }
 }

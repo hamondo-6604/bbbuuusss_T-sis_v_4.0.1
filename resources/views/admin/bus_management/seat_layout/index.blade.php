@@ -67,7 +67,6 @@
                         <th>Capacity</th>
                         <th>Status</th>
                         <th>Description</th>
-                        <th width="150">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
