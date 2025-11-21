@@ -15,7 +15,6 @@ class BookingSeeder extends Seeder
     // Optional: create a specific booking for testing
     Booking::factory()->create([
       'seat_number' => '1A',
-      'seat_type' => 'vip',
       'status' => 'confirmed',
       'amount_paid' => 500.00,
       'payment_status' => 'paid',

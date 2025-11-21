@@ -4,9 +4,9 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class RouteFactory extends Factory
+class BusRouteFactory extends Factory
 {
-  protected $model = \App\Models\Route::class;
+  protected $model = \App\Models\BusRoute::class;
 
   public function definition(): array
   {

@@ -114,6 +114,6 @@ class BusController extends Controller
             Storage::disk('public')->delete($bus->bus_img);
         }
         $bus->delete();
-        return redirect()->route('admin.bus.index')->with('success', 'Bus deleted successfully!');
+        return redirect()->route('admin.buses.index')->with('success', 'Bus deleted successfully!');
     }
 }

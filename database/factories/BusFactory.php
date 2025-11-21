@@ -34,12 +34,13 @@ class BusFactory extends Factory
     }
 
     return [
-      'bus_number' => strtoupper($this->faker->bothify('BUS-###??')), // Example: BUS-123AB
+      'bus_number' => strtoupper($this->faker->bothify('BUS-###??')),
       'bus_name' => $this->faker->company . ' ' . $this->faker->word(),
-      'bus_type_id' => $busType->id ?? BusType::factory(), // fallback to factory if none found
+      'bus_type_id' => $busType->id ?? BusType::factory(),
       'seat_layout_id' => $seatLayoutId,
       'total_seats' => SeatLayout::find($seatLayoutId)?->capacity ?? $this->faker->numberBetween(20, 50),
-      'bus_img' => null, // or you can use faker image URLs here if needed
+      'default_seat_type' => $this->faker->randomElement(['economy', 'business', 'vip']),
+      'bus_img' => null,
       'status' => $this->faker->randomElement(['active', 'inactive', 'maintenance']),
       'description' => $this->faker->optional()->sentence(12),
     ];

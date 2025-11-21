@@ -1,4 +1,4 @@
-@extends('layouts.user')
+@extends('layouts.app')
 
 @section('content')
 
@@ -7,11 +7,11 @@
 
     <div class="bg-white shadow p-6 rounded">
 
-      <p><strong>Route:</strong> {{ $trip->route->from }} → {{ $trip->route->to }}</p>
-      <p><strong>Date:</strong> {{ $bookingData['travel_date'] }}</p>
+      <p><strong>Route:</strong> {{ $trip->route->origin }} → {{ $trip->route->destination }}</p>
+      <p><strong>Date:</strong> {{ \Carbon\Carbon::parse($bookingData['travel_date'])->format('F j, Y') }}</p>
       <p><strong>Bus:</strong> {{ $trip->bus->name }}</p>
       <p><strong>Seat:</strong> {{ $seat->seat_number }}</p>
-      <p><strong>Fare:</strong> ${{ number_format($trip->fare, 2) }}</p>
+      <p><strong>Fare:</strong> ${{ number_format($seat->fare, 2) }}</p>
 
       <form method="POST" action="{{ route('user.bookings.storeFinal', $trip->id) }}" class="mt-6">
         @csrf

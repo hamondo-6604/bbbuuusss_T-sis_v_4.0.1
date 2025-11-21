@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Relations\BelongsTo; // <-- ADDED for type safety
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Booking extends Model
 {
@@ -20,7 +20,6 @@ class Booking extends Model
     'trip_id',
     'seat_id',
     'seat_number',
-    'seat_type',
     'status',
     'departure_time',
     'arrival_time',
@@ -35,39 +34,35 @@ class Booking extends Model
     'departure_time' => 'datetime',
     'arrival_time' => 'datetime',
     'cancelled_at' => 'datetime',
-    // Casting to float/decimal is generally safe, but Laravel's DB query will handle it.
-    // Keeping it clean here. The `decimal:2` in migration is enough.
     'amount_paid' => 'decimal:2',
   ];
 
   // ------------------------------------------------------------------
-  // RELATIONSHIPS (with type-hinting)
+  // RELATIONSHIPS
   // ------------------------------------------------------------------
 
-  public function user(): BelongsTo // <-- Added BelongsTo return type
+  public function user(): BelongsTo
   {
     return $this->belongsTo(User::class);
   }
 
-  public function bus(): BelongsTo // <-- Added BelongsTo return type
+  public function bus(): BelongsTo
   {
     return $this->belongsTo(Bus::class);
   }
 
-  public function route(): BelongsTo // <-- Added BelongsTo return type
+  public function route(): BelongsTo
   {
-    return $this->belongsTo(Route::class);
+    return $this->belongsTo(BusRoute::class);
   }
 
-  public function trip(): BelongsTo // <-- Added BelongsTo return type
+  public function trip(): BelongsTo
   {
-    // trip_id is nullable in migration
     return $this->belongsTo(Trip::class);
   }
 
-  public function seat(): BelongsTo // <-- Added BelongsTo return type
+  public function seat(): BelongsTo
   {
-    // seat_id is nullable in migration
     return $this->belongsTo(Seat::class);
   }
 
@@ -75,14 +70,15 @@ class Booking extends Model
   // BOOT & LIFECYCLE HOOKS
   // ------------------------------------------------------------------
 
-  // Automatically generate unique booking_reference
+
+
   protected static function boot()
   {
     parent::boot();
 
     static::creating(function ($booking) {
       if (empty($booking->booking_reference)) {
-        $booking->booking_reference = 'BKG-' . strtoupper(Str::random(8)); // Slightly modified prefix
+        $booking->booking_reference = 'BKG-' . strtoupper(Str::random(8));
       }
     });
   }
@@ -96,7 +92,7 @@ class Booking extends Model
     return $query->where('status', 'pending');
   }
 
-  public function scopeConfirmed($query) // <-- Added Confirmed scope
+  public function scopeConfirmed($query)
   {
     return $query->where('status', 'confirmed');
   }
@@ -112,18 +108,25 @@ class Booking extends Model
   }
 
   // ------------------------------------------------------------------
-  // ACCESSORS (Formatting for display)
+  // ACCESSORS
   // ------------------------------------------------------------------
 
   /**
-   * Get the formatted amount paid for display purposes.
-   * NOTE: Do NOT use accessors for formatting unless explicitly necessary,
-   * use Blade/helpers instead to avoid issues when retrieving the raw value.
-   * This method ensures the raw decimal is used internally.
+   * Get the formatted amount paid for display.
    */
   public function getFormattedAmountPaidAttribute(): string
   {
-    // Returns a formatted string for views
     return number_format($this->amount_paid, 2);
+  }
+
+  /**
+   * Get the effective seat type dynamically.
+   * Falls back to seat or bus default if needed.
+   */
+  public function getEffectiveSeatTypeAttribute(): string
+  {
+    return $this->seat?->seat_type
+      ?? $this->bus?->default_seat_type
+      ?? 'economy';
   }
 }

@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Route;
+use App\Models\BusRoute;
 use App\Models\Bus;
 
 class TripFactory extends Factory
@@ -12,7 +12,7 @@ class TripFactory extends Factory
 
   public function definition(): array
   {
-    $route = Route::inRandomOrder()->first();
+    $route = BusRoute::inRandomOrder()->first();
     $bus   = Bus::inRandomOrder()->first();
 
     $departure = $this->faker->time('H:i');

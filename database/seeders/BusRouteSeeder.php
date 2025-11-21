@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Route;
+use App\Models\BusRoute;
 
-class RouteSeeder extends Seeder
+class BusRouteSeeder extends Seeder
 {
   public function run(): void
   {
-    Route::factory()->count(10)->create();
+    BusRoute::factory()->count(10)->create();
   }
 }

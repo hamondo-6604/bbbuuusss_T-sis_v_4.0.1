@@ -6,70 +6,71 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateBookingsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
-    {
-        Schema::create('bookings', function (Blueprint $table) {
-            $table->id();  // Primary key
-            
-            // Foreign keys
-            $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');
-            $table->foreignId('bus_id')
-                  ->constrained('buses')
-                  ->onDelete('cascade');
-            $table->foreignId('route_id')
-                  ->constrained('routes')
-                  ->onDelete('cascade');
+  /**
+   * Run the migrations.
+   *
+   * @return void
+   */
+  public function up()
+  {
+    Schema::create('bookings', function (Blueprint $table) {
+      $table->id();  // Primary key
 
-            // Optional additional foreign keys, comment out if you don't have these tables
-            $table->foreignId('trip_id')->nullable()
-                  ->constrained('trips')
-                  ->onDelete('cascade');
-            $table->foreignId('seat_id')->nullable()
-                  ->constrained('seats')
-                  ->onDelete('set null');
-            
-            // Booking details
-            $table->string('seat_number')->nullable();
-            $table->string('seat_type')->default('economy');
-            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])
-                  ->default('pending');
+      // Foreign keys
+      $table->foreignId('user_id')
+        ->constrained('users')
+        ->onDelete('cascade');
+      $table->foreignId('bus_id')
+        ->constrained('buses')
+        ->onDelete('cascade');
+      $table->foreignId('route_id')
+        ->constrained('routes')
+        ->onDelete('cascade');
 
-            $table->timestamp('departure_time')->nullable();
-            $table->timestamp('arrival_time')->nullable();
+      // Optional foreign keys
+      $table->foreignId('trip_id')->nullable()
+        ->constrained('trips')
+        ->onDelete('cascade');
+      $table->foreignId('seat_id')->nullable()
+        ->constrained('seats')
+        ->onDelete('set null');
 
-            // Payment details
-            $table->decimal('amount_paid', 10, 2)->default(0.00);
-            $table->string('payment_status')->default('unpaid');
+      // Booking details
+      $table->string('seat_number')->nullable();
+      $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])
+        ->default('pending');
 
-            $table->string('booking_reference')->unique();
+      $table->timestamp('departure_time')->nullable();
+      $table->timestamp('arrival_time')->nullable();
 
-            $table->timestamp('cancelled_at')->nullable();
+      // Payment details
+      $table->decimal('amount_paid', 10, 2)->default(0.00);
+      $table->string('payment_status')->default('unpaid');
 
-            // Laravel timestamps and soft deletes
-            $table->timestamps();
-            $table->softDeletes();
+      // Booking reference
+      $table->string('booking_reference')->unique();
 
-            // Indexes for optimization
-            $table->index('status');
-            $table->index('payment_status');
-            $table->index('booking_reference');
-        });
-    }
+      // Cancellation timestamp
+      $table->timestamp('cancelled_at')->nullable();
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('bookings');
-    }
+      // Laravel timestamps and soft deletes
+      $table->timestamps();
+      $table->softDeletes();
+
+      // Indexes for optimization
+      $table->index('status');
+      $table->index('payment_status');
+      $table->index('booking_reference');
+    });
+  }
+
+  /**
+   * Reverse the migrations.
+   *
+   * @return void
+   */
+  public function down()
+  {
+    Schema::dropIfExists('bookings');
+  }
 }

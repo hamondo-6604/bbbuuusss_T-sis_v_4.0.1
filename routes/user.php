@@ -11,7 +11,7 @@ use App\Http\Controllers\Passenger\SettingsController;
 | Passenger Dashboard
 |--------------------------------------------------------------------------
 */
-Route::get('dashboard', [DashboardController::class, 'index'])
+Route::get('dashboard', [DashboardController::class, 'dashboard'])
   ->name('dashboard');
 
 

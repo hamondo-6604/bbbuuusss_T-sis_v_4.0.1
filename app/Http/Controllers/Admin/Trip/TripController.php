@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin\Trip;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Trip;
-use App\Models\Route;
+use App\Models\BusRoute;
 use App\Models\Bus;
 
 class TripController extends Controller
@@ -18,7 +18,7 @@ class TripController extends Controller
 
   public function create()
   {
-    $routes = Route::all();
+    $routes = BusRoute::all();
     $buses  = Bus::all();
     return view('admin.triproute_management.trip.create', compact('routes', 'buses'));
   }
@@ -38,13 +38,13 @@ class TripController extends Controller
 
     Trip::create($request->all());
 
-    return redirect()->route('trips.index')->with('success', 'Trip created successfully.');
+    return redirect()->route('admin.trips.index')->with('success', 'Trip created successfully.');
   }
 
   public function edit($id)
   {
     $trip   = Trip::findOrFail($id);
-    $routes = Route::all();
+    $routes = BusRoute::all();
     $buses  = Bus::all();
     return view('admin.triproute_management.trip.edit', compact('trip', 'routes', 'buses'));
   }

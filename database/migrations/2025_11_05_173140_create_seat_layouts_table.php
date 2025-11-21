@@ -15,14 +15,13 @@ return new class extends Migration
       $table->integer('total_columns');
       $table->integer('capacity')->nullable();
 
-      // ✅ FIX: Added the missing column as a JSON type
+      // JSON structure of seats
       $table->json('layout_map')->nullable();
 
       $table->string('status')->default('active');
       $table->text('description')->nullable();
       $table->timestamps();
 
-      // Prevent duplicates
       $table->unique(['layout_name', 'total_rows', 'total_columns']);
     });
   }

@@ -22,16 +22,19 @@ class DatabaseSeeder extends Seeder
       // 3️⃣ Seed Buses (depends on bus types and seat layouts)
       $this->call(BusSeeder::class);
 
-      // 4️⃣ Seed Users (admins, customers, etc.)
+      // 4️⃣ Seed Seats for each bus (depends on buses)
+      $this->call(SeatSeeder::class);
+
+      // 5️⃣ Seed Users (admins, customers, etc.)
       $this->call(UserSeeder::class);
 
-      // 5️⃣ Seed Routes (needed before trips)
-      $this->call(RouteSeeder::class);
+      // 6️⃣ Seed Routes (needed before trips)
+      $this->call(BusRouteSeeder::class);
 
-      // 6️⃣ Seed Trips (depends on buses and routes)
+      // 7️⃣ Seed Trips (depends on buses and routes)
       $this->call(TripSeeder::class);
 
-      // 7️⃣ Seed Bookings (depends on trips and users)
+      // 8️⃣ Seed Bookings (depends on trips and users)
       $this->call(BookingSeeder::class);
     });
   }

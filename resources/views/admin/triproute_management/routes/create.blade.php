@@ -3,7 +3,7 @@
 @section('content')
   <h1>{{ isset($route) ? 'Edit Route' : 'Add Route' }}</h1>
 
-  <form action="{{ isset($route) ? route('routes.update', $route->id) : route('routes.store') }}" method="POST">
+  <form action="{{ isset($route) ? route('admin.routes.update', $route->id) : route('admin.routes.store') }}" method="POST">
     @csrf
     @if(isset($route))
       @method('PUT')

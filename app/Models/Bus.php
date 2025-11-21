@@ -28,6 +28,11 @@ class Bus extends Model
         return $this->belongsTo(BusType::class, 'bus_type_id');
     }
 
+  public function seats()
+  {
+    return $this->hasMany(Seat::class);
+  }
+
     // Bus belongs to SeatLayout
     public function seatLayout()
     {

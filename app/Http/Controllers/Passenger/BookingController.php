@@ -8,181 +8,166 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
-use App\Models\Route;
+use App\Models\BusRoute;
 use App\Models\Trip;
-use App\Models\Seat;
 use App\Models\Booking;
+use App\Models\SeatLayout;
 
 class BookingController extends Controller
 {
-  /*
-  |--------------------------------------------------------------------------
-  | STEP 1 — Show Route + Date Selection Form
-  |--------------------------------------------------------------------------
-  */
+  // STEP 1 — Show Route + Date Selection Form
   public function create()
   {
-    // Get all unique routes for dropdown
-    $routes = Route::select('from', 'to')->distinct()->get();
+    $routes = BusRoute::select('origin', 'destination')->distinct()->get();
 
-    return view('passengers.bookings.create', compact('routes'));
+    // Extract unique origins and destinations
+    $origins = $routes->pluck('origin')->unique();
+    $destinations = $routes->pluck('destination')->unique();
+
+    return view('passengers.bookings.create', compact('origins', 'destinations'));
   }
 
 
-  /*
-  |--------------------------------------------------------------------------
-  | STEP 1 (POST) — Save selected route + date & redirect to trips page
-  |--------------------------------------------------------------------------
-  */
+  // STEP 1 (POST) — Save selected route + date & redirect to trips page
   public function storeRouteDate(Request $request)
   {
     $request->validate([
-      'from'        => 'required|string',
-      'to'          => 'required|string|different:from',
+      'origin'      => 'required|string',
+      'destination' => 'required|string|different:origin',
       'travel_date' => 'required|date|after_or_equal:today',
     ]);
 
     return redirect()->route(
       'user.bookings.selectTrip',
       [
-        'from' => $request->from,
-        'to'   => $request->to,
+        'from' => $request->origin,
+        'to'   => $request->destination,
         'date' => $request->travel_date,
       ]
     );
   }
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | STEP 2 — Show available trips for selected route
-  |--------------------------------------------------------------------------
-  */
+  // STEP 2 — Show available trips for selected route
   public function selectTrip($from, $to, $date)
   {
     $travelDate = Carbon::parse($date);
 
     $trips = Trip::whereHas('route', function ($q) use ($from, $to) {
-      $q->where('from', $from)->where('to', $to);
+      $q->where('origin', $from)->where('destination', $to);
     })
       ->whereDate('departure_time', $travelDate)
-      ->with(['bus', 'route'])
+      ->with(['bus', 'route', 'bus.seatLayout'])
       ->get();
 
-    return view('passengers.bookings.select-trip', compact('trips'));
+    $upcomingTrips = collect();
+    if ($trips->isEmpty()) {
+      $upcomingTrips = Trip::whereHas('route', function ($q) use ($from, $to) {
+        $q->where('origin', $from)->where('destination', $to);
+      })
+        ->whereDate('departure_time', '>', $travelDate)
+        ->orderBy('departure_time', 'asc')
+        ->with(['bus', 'route', 'bus.seatLayout'])
+        ->get();
+    }
+
+    return view('passengers.bookings.select-trip', [
+      'trips' => $trips,
+      'upcomingTrips' => $upcomingTrips,
+      'selectedDate' => $travelDate->format('Y-m-d'),
+      'from' => $from,
+      'to' => $to,
+    ]);
   }
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | STEP 3 — Seat Selection for chosen trip
-  |--------------------------------------------------------------------------
-  */
+  // STEP 3 — Seat Selection
   public function selectSeats(Trip $trip)
   {
-    $seats = Seat::where('bus_id', $trip->bus_id)->orderBy('seat_number')->get();
+    $bus = $trip->bus;
+    $layout = $bus->seatLayout;
+
+    $seats = [];
+
+    if ($layout && $layout->layout_map) {
+      $rows = $layout->layout_map['rows'];
+      $columns = $layout->layout_map['columns'];
+
+      for ($r = 1; $r <= $rows; $r++) {
+        for ($c = 1; $c <= $columns; $c++) {
+          $seatNumber = $r . chr(64 + $c); // e.g., 1A, 1B, 2A, 2B
+          $seats[] = [
+            'seat_number' => $seatNumber,
+            'available'   => !$trip->bookings()->where('seat_number', $seatNumber)->exists(),
+            'type'        => 'economy', // you can customize based on layout
+          ];
+        }
+      }
+    }
 
     return view('passengers.bookings.seats', compact('trip', 'seats'));
   }
 
 
-  /*
-  |--------------------------------------------------------------------------
-  | STEP 4 — Confirm Booking page
-  |--------------------------------------------------------------------------
-  */
+  // STEP 4 — Confirm Booking
   public function confirm(Request $request, Trip $trip)
   {
     $request->validate([
-      'seat_id' => 'required|exists:seats,id',
+      'seat_number' => 'required|string',
     ]);
 
-    $seat = Seat::find($request->seat_id);
-
     // Prevent double booking
-    $alreadyBooked = Booking::where('trip_id', $trip->id)
-      ->where('seat_id', $seat->id)
-      ->exists();
-
-    if ($alreadyBooked) {
+    if (Booking::where('trip_id', $trip->id)->where('seat_number', $request->seat_number)->exists()) {
       return back()->with('error', 'This seat has just been booked. Please choose another.');
     }
 
     $bookingData = [
       'travel_date' => $trip->departure_time->format('Y-m-d'),
-      'fare'        => $trip->fare ?? 0,
+      'fare' => $trip->fare ?? 0,
     ];
 
-    return view('passengers.bookings.confirm', compact('trip', 'seat', 'bookingData'));
+    return view('passengers.bookings.confirm', [
+      'trip' => $trip,
+      'seatNumber' => $request->seat_number,
+      'bookingData' => $bookingData,
+    ]);
   }
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | FINAL — Store booking in database
-  |--------------------------------------------------------------------------
-  */
+  // FINAL — Store booking
   public function storeFinal(Request $request, Trip $trip)
   {
     $request->validate([
-      'seat_id'     => 'required|exists:seats,id',
+      'seat_number' => 'required|string',
       'travel_date' => 'required|date',
     ]);
 
-    $seat = Seat::findOrFail($request->seat_id);
-
-    // Prevent double booking again
-    if (
-      Booking::where('trip_id', $trip->id)
-        ->where('seat_id', $seat->id)
-        ->exists()
-    ) {
+    if (Booking::where('trip_id', $trip->id)->where('seat_number', $request->seat_number)->exists()) {
       return redirect()->route('user.bookings.create')
         ->with('error', 'Seat already booked. Please start again.');
     }
 
     $booking = Booking::create([
-      'user_id'     => Auth::id(),
-      'bus_id'      => $trip->bus_id,
-      'route_id'    => $trip->route_id,
-      'trip_id'     => $trip->id,
-      'seat_id'     => $seat->id,
-
-      'seat_number' => $seat->seat_number,
-      'seat_type'   => $seat->type ?? 'economy',
-
+      'user_id' => Auth::id(),
+      'bus_id' => $trip->bus_id,
+      'route_id' => $trip->route_id,
+      'trip_id' => $trip->id,
+      'seat_number' => $request->seat_number,
+      'seat_type' => 'economy', // Optional: could fetch from layout_map
       'departure_time' => $trip->departure_time,
-      'arrival_time'   => $trip->arrival_time,
-
-      'amount_paid'    => $trip->fare,
+      'arrival_time' => $trip->arrival_time,
+      'amount_paid' => $trip->fare,
       'payment_status' => 'unpaid',
-
-      'status'          => 'pending',
+      'status' => 'pending',
       'booking_reference' => $this->generateReference(),
     ]);
 
-    return redirect()
-      ->route('user.bookings.index')
+    return redirect()->route('user.bookings.index')
       ->with('success', 'Booking successfully created!');
   }
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | Generate Booking Reference Code
-  |--------------------------------------------------------------------------
-  */
   private function generateReference()
   {
     return 'BKG-' . strtoupper(Str::random(8));
   }
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | Booking List
-  |--------------------------------------------------------------------------
-  */
   public function index()
   {
     $bookings = Booking::where('user_id', Auth::id())

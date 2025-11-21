@@ -31,7 +31,7 @@ class Trip extends Model
   // Relationships
   public function route()
   {
-    return $this->belongsTo(Route::class);
+    return $this->belongsTo(BusRoute::class);
   }
 
   public function bus()

@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Admin\Trip;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Route;
+use App\Models\BusRoute;
 
 class RouteController extends Controller
 {
   public function index()
   {
-    $routes = Route::all();
+    $routes = BusRoute::all();
     return view('admin.triproute_management.routes.index', compact('routes'));
   }
 
@@ -27,14 +27,14 @@ class RouteController extends Controller
       'destination' => 'required|string|max:255',
     ]);
 
-    Route::create($request->all());
+    BusRoute::create($request->all());
 
     return redirect()->route('routes.index')->with('success', 'Route created successfully.');
   }
 
   public function edit($id)
   {
-    $route = Route::findOrFail($id);
+    $route = BusRoute::findOrFail($id);
     return view('admin.triproute_management.routes.edit', compact('route'));
   }
 
@@ -46,7 +46,7 @@ class RouteController extends Controller
       'destination' => 'required|string|max:255',
     ]);
 
-    $route = Route::findOrFail($id);
+    $route = BusRoute::findOrFail($id);
     $route->update($request->all());
 
     return redirect()->route('routes.index')->with('success', 'Route updated successfully.');
@@ -54,7 +54,7 @@ class RouteController extends Controller
 
   public function destroy($id)
   {
-    $route = Route::findOrFail($id);
+    $route = BusRoute::findOrFail($id);
     $route->delete();
 
     return redirect()->route('routes.index')->with('success', 'Route deleted successfully.');
