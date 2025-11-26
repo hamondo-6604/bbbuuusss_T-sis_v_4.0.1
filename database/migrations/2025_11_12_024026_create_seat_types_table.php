@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cities', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+      Schema::create('seat_types', function (Blueprint $table) {
+        $table->id();
+        $table->string('type_name')->unique();
+        $table->string('description')->nullable();
+        $table->decimal('default_fare_multiplier',5,2)->default(1.00);
+        $table->timestamps();
+      });
+
     }
 
     /**
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cities');
+        Schema::dropIfExists('seat_types');
     }
 };

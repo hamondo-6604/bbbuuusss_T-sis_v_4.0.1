@@ -1,94 +1,28 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany; // <-- ADD THIS
 
 class User extends Authenticatable
 {
-  use HasFactory, Notifiable;
+  use HasFactory, SoftDeletes;
 
-  /**
-   * The attributes that are mass assignable.
-   *
-   * @var array<int, string>
-   */
+  protected $keyType = 'string';
+  public $incrementing = false; // UUID
   protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'role',
-    'status',
-    'phone',
+    'user_type_id','full_name','email','phone','password_hash','status'
   ];
 
-  /**
-   * The attributes that should be hidden for serialization.
-   *
-   * @var array<int, string>
-   */
-  protected $hidden = [
-    'password',
-    'remember_token',
-  ];
-
-  /**
-   * The attributes that should be cast.
-   *
-   * @var array<string, string>
-   */
-  protected $casts = [
-    'email_verified_at' => 'datetime',
-    'password' => 'hashed',
-  ];
-
-  /**
-   * Check if the user is an admin.
-   *
-   * @return bool
-   */
-  public function isAdmin(): bool
+  public function userType()
   {
-    return $this->role === 'admin';
+    return $this->belongsTo(UserType::class);
   }
 
-  /**
-   * Check if the user is a driver.
-   *
-   * @return bool
-   */
-  public function isDriver(): bool
+  public function bookings()
   {
-    return $this->role === 'driver';
-  }
-
-  /**
-   * Check if the user is a customer.
-   *
-   * @return bool
-   */
-  public function isCustomer(): bool
-  {
-    return $this->role === 'customer';
-  }
-
-  // ------------------------------------------------------------------
-  // ELOQUENT RELATIONSHIPS
-  // ------------------------------------------------------------------
-
-  /**
-   * Get the bookings associated with the user.
-   * A User has many Bookings (One-to-Many relationship).
-   *
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
-   */
-  public function bookings(): HasMany // <-- ADD THIS METHOD
-  {
-    // Assumes the Booking model exists at App\Models\Booking
-    // and the 'bookings' table has a 'user_id' foreign key.
     return $this->hasMany(Booking::class);
   }
 }

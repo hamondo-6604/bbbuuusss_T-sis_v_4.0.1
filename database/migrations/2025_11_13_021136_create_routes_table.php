@@ -12,14 +12,16 @@ return new class extends Migration {
   {
     Schema::create('routes', function (Blueprint $table) {
       $table->id();
-      $table->string('route_name')->unique(); // e.g., "City A → City B"
-      $table->string('origin');
-      $table->string('destination');
-      $table->integer('distance_km')->nullable();
-      $table->enum('status', ['active', 'inactive'])->default('active');
-      $table->text('description')->nullable();
+      $table->foreignId('origin_terminal_id')->constrained('terminals')->cascadeOnUpdate();
+      $table->foreignId('destination_terminal_id')->constrained('terminals')->cascadeOnUpdate();
+      $table->text('via')->nullable();
+      $table->decimal('distance_km', 8,2);
+      $table->integer('duration_min');
+      $table->boolean('is_active')->default(true);
       $table->timestamps();
+      $table->unique(['origin_terminal_id','destination_terminal_id']);
     });
+
   }
 
   /**

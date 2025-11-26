@@ -9,13 +9,8 @@ return new class extends Migration {
   {
     Schema::create('bus_types', function (Blueprint $table) {
       $table->id();
-      $table->string('type_name');
-
-      $table->foreignId('seat_layout_id')
-        ->nullable()
-        ->constrained('seat_layouts')
-        ->onDelete('set null');
-
+      $table->string('type_name')->unique();
+      $table->enum('deck_type',['single','double'])->default('single');
       $table->enum('status', ['active', 'inactive'])->default('active');
       $table->text('description')->nullable();
       $table->timestamps();

@@ -1,44 +1,29 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Seat extends Model
 {
-  use HasFactory;
+  protected $fillable = ['layout_id','seat_type_id','seat_number','seat_position_row','seat_position_col','status','gender_restriction'];
 
-  // Fillable fields
-  protected $fillable = [
-    'bus_id',
-    'seat_number',
-    'seat_type',
-    'status',
-  ];
-
-  /**
-   * Relationship: Seat belongs to a Bus
-   */
-  public function bus()
+  public function layout()
   {
-    return $this->belongsTo(Bus::class);
+    return $this->belongsTo(SeatLayout::class, 'layout_id');
   }
 
-  /**
-   * Relationship: Seat has many Bookings
-   */
+  public function seatType()
+  {
+    return $this->belongsTo(SeatType::class, 'seat_type_id');
+  }
+
   public function bookings()
   {
-    return $this->hasMany(Booking::class);
+    return $this->belongsToMany(Booking::class, 'booking_seats')->withPivot('status');
   }
 
-  /**
-   * Get the effective seat type.
-   * If seat_type is null, inherit from the bus default_seat_type.
-   */
-  public function getEffectiveSeatTypeAttribute()
+  public function layoutMap()
   {
-    return $this->seat_type ?? $this->bus->default_seat_type ?? 'economy';
+    return $this->hasOne(LayoutMap::class);
   }
 }

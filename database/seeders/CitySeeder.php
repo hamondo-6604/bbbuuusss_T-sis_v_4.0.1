@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Trip;
+use App\Models\City;
 
-class TripSeeder extends Seeder
+class CitySeeder extends Seeder
 {
   public function run(): void
   {
-    Trip::factory()->count(20)->create();
+    City::factory()->count(5)->create();
   }
 }

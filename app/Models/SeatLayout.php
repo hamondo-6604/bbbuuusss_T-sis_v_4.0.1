@@ -1,59 +1,26 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SeatLayout extends Model
 {
   use HasFactory;
+  protected $fillable = ['layout_name','total_seats','deck_type','description'];
 
-  protected $fillable = [
-    'layout_name',
-    'total_rows',
-    'total_columns',
-    'capacity',
-    'layout_map',
-    'status',
-    'description',
-  ];
-
-  protected $casts = [
-    'layout_map' => 'array', // cast JSON to array
-  ];
-
-  // ------------------------------------------------------------------
-  // RELATIONSHIPS
-  // ------------------------------------------------------------------
-
-  /**
-   * A seat layout can have many bus types.
-   */
-  public function busTypes(): HasMany
+  public function seats()
   {
-    return $this->hasMany(\App\Models\BusType::class, 'seat_layout_id');
+    return $this->hasMany(Seat::class, 'layout_id');
   }
 
-  /**
-   * A seat layout can be assigned directly to buses.
-   */
-  public function buses(): HasMany
+  public function layoutMap()
   {
-    return $this->hasMany(Bus::class, 'seat_layout_id');
+    return $this->hasMany(LayoutMap::class, 'layout_id');
   }
 
-  // ------------------------------------------------------------------
-  // ACCESSORS & HELPERS
-  // ------------------------------------------------------------------
-
-  /**
-   * Get the effective capacity of the layout.
-   * If `capacity` is null, calculate as total_rows * total_columns
-   */
-  public function getEffectiveCapacityAttribute(): int
+  public function buses()
   {
-    return $this->capacity ?? ($this->total_rows * $this->total_columns);
+    return $this->hasMany(Bus::class);
   }
 }

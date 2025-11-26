@@ -1,46 +1,34 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Bus extends Model
 {
-    use HasFactory;
+  use HasFactory;
+  use SoftDeletes;
 
-    protected $fillable = [
-        'bus_number',
-        'bus_name',
-        'bus_type_id',
-        'seat_layout_id',
-        'total_seats',
-        'bus_img',
-        'status',
-        'description',
-    ];
+  protected $fillable = ['bus_number','bus_type_id','layout_id','capacity','status'];
 
-    // Relationships
-
-    // Bus belongs to BusType
-    public function type()
-    {
-        return $this->belongsTo(BusType::class, 'bus_type_id');
-    }
-
-  public function seats()
+  public function busType()
   {
-    return $this->hasMany(Seat::class);
+    return $this->belongsTo(BusType::class);
   }
 
-    // Bus belongs to SeatLayout
-    public function seatLayout()
-    {
-        return $this->belongsTo(SeatLayout::class, 'seat_layout_id');
-    }
+  public function layout()
+  {
+    return $this->belongsTo(SeatLayout::class, 'layout_id');
+  }
 
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
-    }
+  public function amenities()
+  {
+    return $this->belongsToMany(Amenity::class, 'bus_amenities');
+  }
+
+  public function schedules()
+  {
+    return $this->hasMany(Schedule::class);
+  }
 }

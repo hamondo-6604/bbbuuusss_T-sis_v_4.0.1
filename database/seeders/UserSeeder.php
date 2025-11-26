@@ -4,23 +4,15 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\UserType;
 
 class UserSeeder extends Seeder
 {
   public function run(): void
   {
-    // ------------------------------------------------------------------
-    // Create a specific admin user
-    // ------------------------------------------------------------------
-    User::factory()->admin()->create([
-      'name' => 'Admin User',
-      'email' => 'admin@example.com',
-      'password' => bcrypt('admin123'), // specific password
+    $customerType = UserType::where('type_name','Customer')->first();
+    User::factory()->count(10)->create([
+      'user_type_id' => $customerType->id
     ]);
-
-    // ------------------------------------------------------------------
-    // Create additional random users
-    // ------------------------------------------------------------------
-    User::factory(10)->create();
   }
 }

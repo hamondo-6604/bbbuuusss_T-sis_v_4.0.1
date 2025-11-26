@@ -14,54 +14,16 @@ class CreateBookingsTable extends Migration
   public function up()
   {
     Schema::create('bookings', function (Blueprint $table) {
-      $table->id();  // Primary key
-
-      // Foreign keys
-      $table->foreignId('user_id')
-        ->constrained('users')
-        ->onDelete('cascade');
-      $table->foreignId('bus_id')
-        ->constrained('buses')
-        ->onDelete('cascade');
-      $table->foreignId('route_id')
-        ->constrained('routes')
-        ->onDelete('cascade');
-
-      // Optional foreign keys
-      $table->foreignId('trip_id')->nullable()
-        ->constrained('trips')
-        ->onDelete('cascade');
-      $table->foreignId('seat_id')->nullable()
-        ->constrained('seats')
-        ->onDelete('set null');
-
-      // Booking details
-      $table->string('seat_number')->nullable();
-      $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])
-        ->default('pending');
-
-      $table->timestamp('departure_time')->nullable();
-      $table->timestamp('arrival_time')->nullable();
-
-      // Payment details
-      $table->decimal('amount_paid', 10, 2)->default(0.00);
-      $table->string('payment_status')->default('unpaid');
-
-      // Booking reference
-      $table->string('booking_reference')->unique();
-
-      // Cancellation timestamp
-      $table->timestamp('cancelled_at')->nullable();
-
-      // Laravel timestamps and soft deletes
+      $table->uuid('id')->primary();
+      $table->foreignUuid('user_id')->constrained('users')->cascadeOnUpdate();
+      $table->foreignUuid('schedule_id')->constrained('schedules')->cascadeOnUpdate();
+      $table->timestamp('booking_date')->useCurrent();
+      $table->enum('status',['confirmed','pending','cancelled'])->default('pending');
+      $table->decimal('total_amount',10,2);
       $table->timestamps();
       $table->softDeletes();
-
-      // Indexes for optimization
-      $table->index('status');
-      $table->index('payment_status');
-      $table->index('booking_reference');
     });
+
   }
 
   /**
