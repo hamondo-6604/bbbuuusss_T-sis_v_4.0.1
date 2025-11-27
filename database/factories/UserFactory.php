@@ -15,10 +15,10 @@ class UserFactory extends Factory
     return [
       'id' => (string) Str::uuid(),
       'user_type_id' => 1, // assign Admin by default, can be updated
-      'full_name' => $this->faker->name,
+      'name' => $this->faker->name,
       'email' => $this->faker->unique()->safeEmail,
       'phone' => $this->faker->unique()->phoneNumber,
-      'password_hash' => bcrypt('password'),
+      'password' => bcrypt('password'),
       'status' => 'active',
     ];
   }

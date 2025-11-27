@@ -9,7 +9,7 @@ class UserTypeSeeder extends Seeder
 {
   public function run(): void
   {
-    $types = ['Admin','Customer','Staff','Driver'];
+    $types = ['admin','customer','staff','driver'];
 
     foreach ($types as $type) {
       UserType::create([

@@ -11,10 +11,11 @@ class Schedule extends Model
   use HasFactory;
   use SoftDeletes;
 
-  protected $keyType = 'string';
-  public $incrementing = false; // UUID primary key
+ protected $keyType = 'string';
+  public $incrementing = false; // important for UUIDs
 
   protected $fillable = [
+    'id',
     'bus_id',
     'route_id',
     'departure_terminal_id',

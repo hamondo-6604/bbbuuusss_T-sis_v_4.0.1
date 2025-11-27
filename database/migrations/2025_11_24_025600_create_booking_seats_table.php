@@ -16,6 +16,8 @@ return new class extends Migration
         $table->foreignUuid('booking_id')->constrained('bookings')->cascadeOnDelete();
         $table->foreignId('seat_id')->constrained('seats')->cascadeOnUpdate();
         $table->enum('status',['booked','cancelled'])->default('booked');
+        $table->timestamps();
+
       });
 
     }

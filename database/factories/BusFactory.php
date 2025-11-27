@@ -16,7 +16,7 @@ class BusFactory extends Factory
     return [
       'bus_number' => strtoupper($this->faker->bothify('??###')),
       'bus_type_id' => BusType::factory(),
-      'layout_id' => SeatLayout::factory(),
+      'seat_layout_id' => SeatLayout::factory(),
       'capacity' => $this->faker->numberBetween(20,60),
       'status' => 'active',
     ];

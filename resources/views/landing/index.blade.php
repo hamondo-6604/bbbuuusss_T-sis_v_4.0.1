@@ -60,7 +60,7 @@
                                     @auth
                                         <div class="user_box_dashboard user_box_link">
                                             <a
-                                                href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('user.dashboard') }}">
+                                                href="{{ auth()->user()->userType->type_name === 'admin' ? route('admin.dashboard') : route('user.dashboard') }}">
                                                 Dashboard
                                             </a>
                                         </div>

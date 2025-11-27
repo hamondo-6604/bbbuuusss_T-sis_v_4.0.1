@@ -4,59 +4,90 @@ namespace App\Http\Controllers\Admin\Trip;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\BusRoute;
+use App\Models\Route;
+use App\Models\Terminal;
 
 class RouteController extends Controller
 {
+  /**
+   * Display a listing of routes.
+   */
   public function index()
   {
-    $routes = BusRoute::all();
-    return view('admin.triproute_management.routes.index', compact('routes'));
+    $routes = Route::with(['originTerminal', 'destinationTerminal'])->paginate(10);
+    return view('admin.trip_management.routes.index', compact('routes'));
   }
 
+  /**
+   * Show the form for creating a new route.
+   */
   public function create()
   {
-    return view('admin.triproute_management.routes.create');
+    $terminals = Terminal::all();
+    return view('admin.trip_management.routes.create', compact('terminals'));
   }
 
+  /**
+   * Store a newly created route.
+   */
   public function store(Request $request)
   {
-    $request->validate([
-      'name' => 'required|string|max:255',
-      'origin' => 'required|string|max:255',
-      'destination' => 'required|string|max:255',
+    $validated = $request->validate([
+      'origin_terminal_id'      => 'required|exists:terminals,id|different:destination_terminal_id',
+      'destination_terminal_id' => 'required|exists:terminals,id',
+      'via'                     => 'nullable|string|max:255',
+      'distance_km'             => 'required|numeric|min:0',
+      'duration_min'            => 'required|integer|min:1',
+      'is_active'               => 'nullable|boolean',
     ]);
 
-    BusRoute::create($request->all());
+    $validated['is_active'] = $request->has('is_active');
 
-    return redirect()->route('routes.index')->with('success', 'Route created successfully.');
+    Route::create($validated);
+
+    return redirect()->route('admin.routes.index')
+      ->with('success', 'Route created successfully.');
   }
 
-  public function edit($id)
+  /**
+   * Show the form for editing a route.
+   */
+  public function edit(Route $route)
   {
-    $route = BusRoute::findOrFail($id);
-    return view('admin.triproute_management.routes.edit', compact('route'));
+    $terminals = Terminal::all();
+    return view('admin.trip_management.routes.edit', compact('route', 'terminals'));
   }
 
-  public function update(Request $request, $id)
+  /**
+   * Update a route.
+   */
+  public function update(Request $request, Route $route)
   {
-    $request->validate([
-      'name' => 'required|string|max:255',
-      'origin' => 'required|string|max:255',
-      'destination' => 'required|string|max:255',
+    $validated = $request->validate([
+      'origin_terminal_id'      => 'required|exists:terminals,id|different:destination_terminal_id',
+      'destination_terminal_id' => 'required|exists:terminals,id',
+      'via'                     => 'nullable|string|max:255',
+      'distance_km'             => 'required|numeric|min:0',
+      'duration_min'            => 'required|integer|min:1',
+      'is_active'               => 'nullable|boolean',
     ]);
 
-    $route = BusRoute::findOrFail($id);
-    $route->update($request->all());
+    $validated['is_active'] = $request->has('is_active');
 
-    return redirect()->route('routes.index')->with('success', 'Route updated successfully.');
+    $route->update($validated);
+
+    return redirect()->route('admin.routes.index')
+      ->with('success', 'Route updated successfully.');
   }
 
-  public function destroy($id)
+  /**
+   * Delete a route.
+   */
+  public function destroy(Route $route)
   {
-    $route = BusRoute::findOrFail($id);
     $route->delete();
 
-    return redirect()->route('routes.index')->with('success', 'Route deleted successfully.');
+    return redirect()->route('admin.routes.index')
+      ->with('success', 'Route deleted successfully.');
   }
 }

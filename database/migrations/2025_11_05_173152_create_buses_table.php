@@ -13,7 +13,7 @@ return new class extends Migration {
       $table->string('bus_name')->nullable();                  // new: friendly bus name
       $table->string('bus_img')->nullable();                   // new: image path/URL
       $table->foreignId('bus_type_id')->constrained('bus_types')->cascadeOnUpdate();
-      $table->foreignId('layout_id')->constrained('seat_layouts')->cascadeOnUpdate();
+      $table->foreignId('seat_layout_id')->constrained('seat_layouts')->cascadeOnUpdate();
       $table->integer('capacity');
       $table->text('description')->nullable();                 // new: optional description
       $table->enum('status', ['active', 'inactive', 'maintenance'])->default('active');

@@ -18,10 +18,10 @@ return new class extends Migration {
       // The FK is added later in a separate migration once user_types exists.
       $table->unsignedBigInteger('user_type_id')->nullable();
 
-      $table->string('full_name');
+      $table->string('name');
       $table->string('email')->unique();
-      $table->string('phone')->unique();
-      $table->string('password_hash');
+      $table->string('phone')->unique()->nullable();
+      $table->string('password');
       $table->enum('status', ['active', 'inactive', 'banned'])->default('active');
       $table->timestamp('email_verified_at')->nullable();
       $table->rememberToken();

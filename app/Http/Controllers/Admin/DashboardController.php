@@ -11,10 +11,10 @@ class DashboardController extends Controller
     public function dashboard(Request $request){
         $user = Auth::user();
 
-        if($user->role === 'admin'){
+        if($user->userType->type_name === 'admin'){
             return view('dashboard.admin_list');
 
-        }else if($user->role === 'customer'){
+        }else if($user->userType->type_name === 'customer'){
             return view('dashboard.passenger_list');
         }
     }

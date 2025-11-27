@@ -21,6 +21,6 @@ class SeatLayout extends Model
 
   public function buses()
   {
-    return $this->hasMany(Bus::class);
+    return $this->hasMany(Bus::class,'seat_layout_id');
   }
 }

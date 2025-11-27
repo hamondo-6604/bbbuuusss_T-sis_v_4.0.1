@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\Bus\BusController;
 use App\Http\Controllers\Admin\Bus\BusTypeController;
 use App\Http\Controllers\Admin\Bus\SeatLayoutController;
+use App\Http\Controllers\Admin\Bus\AmenityController;
 use App\Http\Controllers\Admin\Booking\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\Booking\ReportController;
 use App\Http\Controllers\Admin\User\UserManagementController;
@@ -13,6 +14,11 @@ use App\Http\Controllers\Admin\Trip\RouteController;
 use App\Http\Controllers\Admin\Trip\TripController;
 use App\Http\Controllers\Admin\Trip\AssignBusController;
 use App\Http\Controllers\Admin\Trip\FareController;
+use App\Http\Controllers\Admin\Trip\CityController;
+use App\Http\Controllers\Admin\Trip\TerminalController;
+use App\Http\Controllers\Admin\Trip\RouteStopController;
+use App\Http\Controllers\Admin\Trip\ScheduleController;
+use App\Http\Controllers\Admin\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +27,21 @@ use App\Http\Controllers\Admin\Trip\FareController;
 */
 Route::get('dashboard', [AdminDashboardController::class, 'dashboard'])
   ->name('dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| Payment
+|--------------------------------------------------------------------------
+*/
+
+Route::resource('payments', PaymentController::class)->names([
+  'index'   => 'payments.index',
+  'create'  => 'payments.create',
+  'store'   => 'payments.store',
+  'edit'    => 'payments.edit',
+  'update'  => 'payments.update',
+  'destroy' => 'payments.destroy',
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +74,51 @@ Route::resource('seat-layouts', SeatLayoutController::class)->names([
   'edit'    => 'seat-layouts.edit',
   'update'  => 'seat-layouts.update',
   'destroy' => 'seat-layouts.destroy',
+]);
+
+Route::resource('amenities', AmenityController::class)->names([
+  'index'   => 'amenities.index',
+  'create'  => 'amenities.create',
+  'store'   => 'amenities.store',
+  'edit'    => 'amenities.edit',
+  'update'  => 'amenities.update',
+  'destroy' => 'amenities.destroy',
+]);
+
+Route::resource('cities', CityController::class)->names([
+  'index'   => 'cities.index',
+  'create'  => 'cities.create',
+  'store'   => 'cities.store',
+  'edit'    => 'cities.edit',
+  'update'  => 'cities.update',
+  'destroy' => 'cities.destroy',
+]);
+
+Route::resource('terminals', TerminalController::class)->names([
+  'index'   => 'terminals.index',
+  'create'  => 'terminals.create',
+  'store'   => 'terminals.store',
+  'edit'    => 'terminals.edit',
+  'update'  => 'terminals.update',
+  'destroy' => 'terminals.destroy',
+]);
+
+Route::resource('route-stops', RouteStopController::class)->names([
+  'index'   => 'route-stops.index',
+  'create'  => 'route-stops.create',
+  'store'   => 'route-stops.store',
+  'edit'    => 'route-stops.edit',
+  'update'  => 'route-stops.update',
+  'destroy' => 'route-stops.destroy',
+]);
+
+Route::resource('schedules', ScheduleController::class)->names([
+  'index'   => 'schedules.index',
+  'create'  => 'schedules.create',
+  'store'   => 'schedules.store',
+  'edit'    => 'schedules.edit',
+  'update'  => 'schedules.update',
+  'destroy' => 'schedules.destroy',
 ]);
 
 /*
@@ -116,6 +182,8 @@ Route::prefix('trip-management')->group(function () {
     'destroy' => 'fares.destroy',
   ]);
 });
+
+
 
 
 /*
