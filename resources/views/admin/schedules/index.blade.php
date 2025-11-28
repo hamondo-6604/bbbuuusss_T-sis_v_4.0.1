@@ -10,18 +10,13 @@
     <div class="card shadow-sm border-0">
       <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0 fw-bold">Schedules</h5>
-        <a href="{{ route('admin.schedules.create') }}" class="btn btn-primary btn-sm">
+        <!-- Trigger Create Modal -->
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createScheduleModal">
           <i class="bi bi-plus-circle"></i> Add Schedule
-        </a>
+        </button>
       </div>
 
       <div class="card-body">
-        @if(session('success'))
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        @endif
 
         <div class="table-responsive">
           <table class="table table-striped align-middle text-center">
@@ -41,7 +36,7 @@
               <tr>
                 <td>{{ $loop->iteration }}</td>
 
-                {{-- Route: Origin → Via → Destination --}}
+                {{-- Route --}}
                 <td>
                   {{ $schedule->route->originTerminal->name ?? 'N/A' }}
                   @if($schedule->route->via)
@@ -78,19 +73,15 @@
 
                 {{-- Actions --}}
                 <td>
-                  <a href="{{ route('admin.schedules.edit', $schedule->id) }}" class="btn btn-sm btn-warning">
+                  <!-- Edit Button -->
+                  <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editScheduleModal{{ $schedule->id }}">
                     <i class="bi bi-pencil"></i>
-                  </a>
+                  </button>
 
-                  <form action="{{ route('admin.schedules.destroy', $schedule->id) }}"
-                        method="POST" class="d-inline"
-                        onsubmit="return confirm('Are you sure you want to delete this schedule?');">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-sm btn-danger">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </form>
+                  <!-- Delete Button -->
+                  <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteScheduleModal{{ $schedule->id }}">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </td>
               </tr>
             @empty
@@ -111,4 +102,10 @@
     </div>
 
   </div>
+
+  {{-- Include Modals --}}
+  @include('admin.schedules.modals.create')
+  @include('admin.schedules.modals.edit')
+  @include('admin.schedules.modals.delete')
+
 @endsection

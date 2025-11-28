@@ -1,89 +1,41 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\Passenger\DashboardController;
-use App\Http\Controllers\Passenger\BookingController;
+use App\Http\Controllers\Passenger\DashboardController as UserDashboardController;
+use App\Http\Controllers\Passenger\BookingController as UserBookingController;
+//use App\Http\Controllers\Passenger\SearchController;
 use App\Http\Controllers\Passenger\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
-| Passenger Dashboard
+| User Dashboard
 |--------------------------------------------------------------------------
 */
-Route::get('dashboard', [DashboardController::class, 'dashboard'])
+Route::get('dashboard', [UserDashboardController::class, 'index'])
   ->name('dashboard');
-
 
 /*
 |--------------------------------------------------------------------------
-| Passenger Booking Management
+| My Bookings
 |--------------------------------------------------------------------------
 */
 Route::prefix('bookings')->group(function () {
-
-  // Bookings list
-  Route::get('/', [BookingController::class, 'index'])
-    ->name('bookings.index');
-
-  /*
-  |--------------------------------------------------------------------------
-  | Step 1 — Select Route + Date
-  |--------------------------------------------------------------------------
-  */
-  Route::get('create', [BookingController::class, 'create'])
-    ->name('bookings.create');
-
-  Route::post('create', [BookingController::class, 'storeRouteDate'])
-    ->name('bookings.storeRouteDate');
-
-  /*
-  |--------------------------------------------------------------------------
-  | Step 2 — Select Trip
-  |--------------------------------------------------------------------------
-  */
-  Route::get('select-trip/{from}/{to}/{date}', [BookingController::class, 'selectTrip'])
-    ->name('bookings.selectTrip');
-
-  /*
-  |--------------------------------------------------------------------------
-  | Step 3 — Select Seats
-  |--------------------------------------------------------------------------
-  */
-  Route::get('select-seats/{trip}', [BookingController::class, 'selectSeats'])
-    ->name('bookings.selectSeats');
-
-  /*
-  |--------------------------------------------------------------------------
-  | Step 4 — Confirm Booking
-  |--------------------------------------------------------------------------
-  */
-  Route::post('confirm/{trip}', [BookingController::class, 'confirm'])
-    ->name('bookings.confirm');
-
-  /*
-  |--------------------------------------------------------------------------
-  | Final — Complete Booking & Save
-  |--------------------------------------------------------------------------
-  */
-  Route::post('complete/{trip}', [BookingController::class, 'storeFinal'])
-    ->name('bookings.storeFinal');
+  Route::get('/', [UserBookingController::class, 'index'])->name('bookings.index'); // List all bookings
+  Route::get('{booking}', [UserBookingController::class, 'show'])->name('bookings.show'); // Booking details
+  Route::post('{booking}/cancel', [UserBookingController::class, 'cancel'])->name('bookings.cancel'); // Cancel booking
 });
-
 
 /*
 |--------------------------------------------------------------------------
-| Passenger Settings (Profile / Password)
+| Search Trips
 |--------------------------------------------------------------------------
 */
-Route::prefix('users')->group(function () {
+//Route::get('search', [SearchController::class, 'index'])->name('search');
 
-  Route::get('settings', [SettingsController::class, 'index'])
-    ->name('settings');
-
-  Route::post('settings/profile', [SettingsController::class, 'updateProfile'])
-    ->name('settings.updateProfile');
-
-  Route::post('settings/password', [SettingsController::class, 'updatePassword'])
-    ->name('settings.updatePassword');
-});
+/*
+|--------------------------------------------------------------------------
+| Account Settings
+|--------------------------------------------------------------------------
+*/
+Route::get('settings', [SettingsController::class, 'index'])->name('settings');
+Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');

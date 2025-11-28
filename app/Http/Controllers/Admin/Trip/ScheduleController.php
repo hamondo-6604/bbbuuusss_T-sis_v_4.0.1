@@ -24,7 +24,11 @@ class ScheduleController extends Controller
       ->latest()
       ->paginate(10);
 
-    return view('admin.schedules.index', compact('schedules'));
+    $buses = Bus::where('status', 'active')->get();
+    $routes = Route::where('is_active', true)->with(['originTerminal', 'destinationTerminal'])->get();
+    $terminals = Terminal::all();
+
+    return view('admin.schedules.index', compact('schedules', 'buses', 'routes', 'terminals'));
   }
 
   /**

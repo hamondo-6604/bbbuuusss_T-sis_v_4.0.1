@@ -3,148 +3,164 @@
 namespace App\Http\Controllers\Admin\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\UserType;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserManagementController extends Controller
 {
   /**
-   * Display a listing of all users.
+   * Display a listing of users and roles.
    */
-  public function index()
+  public function index(Request $request)
   {
-    $users = User::all();
-    return view('admin.user_management.users.index', compact('users'));
+    $search = $request->search;
+
+    $users = User::with('userType')
+      ->when($search, fn($query) => $query
+        ->where('name', 'like', "%{$search}%")
+        ->orWhere('email', 'like', "%{$search}%")
+        ->orWhere('phone', 'like', "%{$search}%"))
+      ->latest()
+      ->paginate(10);
+
+    $userTypes = UserType::all();
+
+    return view('admin.user_management.index', compact('users', 'userTypes'));
   }
 
   /**
-   * Show the form for creating a new user.
-   */
-  public function create()
-  {
-    return view('admin.user_management.users.create');
-  }
-
-  /**
-   * Store a newly created user in storage.
+   * Store a new user.
    */
   public function store(Request $request)
   {
-    $validated = $request->validate([
-      'name' => 'required|string|max:255',
-      'email' => 'required|email|unique:users,email',
-      'phone' => 'required|string|max:15',
-      'role' => 'required|in:admin,driver,customer',
-      'password' => 'required|string|min:6|confirmed',
+    $request->validate([
+      'user_type_id' => 'required|exists:user_types,id',
+      'name'         => 'required|string|max:255',
+      'email'        => 'required|email|unique:users,email',
+      'phone'        => 'nullable|string|max:15|unique:users,phone',
+      'password'     => 'required|min:6',
+      'status'       => 'required|in:active,inactive,banned',
     ]);
 
     User::create([
-      'name' => $validated['name'],
-      'email' => $validated['email'],
-      'phone' => $validated['phone'],
-      'role' => $validated['role'],
-      'password' => bcrypt($validated['password']),
+      'user_type_id' => $request->user_type_id,
+      'name'         => $request->name,
+      'email'        => $request->email,
+      'phone'        => $request->phone,
+      'password'     => Hash::make($request->password),
+      'status'       => $request->status,
     ]);
 
     return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
   }
 
   /**
-   * Show the form for editing the specified user.
+   * Update an existing user.
    */
-  public function edit(User $user)
+  public function update(Request $request, $id)
   {
-    return view('admin.user_management.users.edit', compact('user'));
-  }
+    $user = User::findOrFail($id);
 
-  /**
-   * Update the specified user in storage.
-   */
-  public function update(Request $request, User $user)
-  {
-    $validated = $request->validate([
-      'name' => 'required|string|max:255',
-      'email' => 'required|email|unique:users,email,' . $user->id,
-      'phone' => 'required|string|max:15',
-      'role' => 'required|string',
+    $request->validate([
+      'user_type_id' => 'required|exists:user_types,id',
+      'name'         => 'required|string|max:255',
+      'email'        => "required|email|unique:users,email,{$id},id",
+      'phone'        => "nullable|string|max:15|unique:users,phone,{$id},id",
+      'password'     => 'nullable|min:6',
+      'status'       => 'required|in:active,inactive,banned',
     ]);
 
-    $user->update($validated);
+    $user->update([
+      'user_type_id' => $request->user_type_id,
+      'name'         => $request->name,
+      'email'        => $request->email,
+      'phone'        => $request->phone,
+      'status'       => $request->status,
+    ]);
+
+    if ($request->filled('password')) {
+      $user->update(['password' => Hash::make($request->password)]);
+    }
 
     return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
   }
 
   /**
-   * Remove the specified user from storage.
+   * Delete a user.
    */
-  public function destroy(User $user)
+  public function destroy($id)
   {
-    $user->delete();
+    User::findOrFail($id)->delete();
     return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
   }
 
   /**
-   * Show blocked / inactive users.
+   * Store a new role.
    */
-  public function blocked()
-  {
-    $users = User::where('status', 'blocked')->get();
-    return view('admin.user_management.users.blocked', compact('users'));
-  }
-
-  /**
-   * Show user roles and manage permissions.
-   */
-  public function roles()
-  {
-    $users = User::orderBy('id', 'DESC')->get();
-    return view('admin.user_management.roles_permission.roles', compact('users'));
-  }
-
-  /**
-   * Update only the role of a user.
-   */
-  public function updateRole(Request $request, User $user)
+  public function storeRole(Request $request)
   {
     $request->validate([
-      'role' => 'required|in:admin,driver,customer',
+      'type_name'  => 'required|string|max:255|unique:user_types,type_name',
+      'description'=> 'nullable|string|max:500',
+      'is_default' => 'nullable|boolean',
     ]);
 
-    // 1️⃣ Prevent the currently logged-in admin from removing their own admin role
-    if ($user->id === auth()->id() && $request->role !== 'admin') {
-      return back()->with('error', 'You cannot remove your own admin role.');
-    }
-
-    // 2️⃣ Ensure there is always at least one admin
-    if ($user->role === 'admin' && $request->role !== 'admin') {
-      $adminCount = User::where('role', 'admin')->count();
-      if ($adminCount <= 1) {
-        return back()->with('error', 'Cannot remove the last admin.');
-      }
-    }
-
-    // 3️⃣ Update the user role safely
-    $user->update([
-      'role' => $request->role
+    $role = UserType::create([
+      'type_name'  => $request->type_name,
+      'description'=> $request->description,
+      'is_default' => $request->has('is_default'),
     ]);
 
-    return redirect()->route('admin.user-roles.index')->with('success', 'Role updated successfully.');
-  }
+    if ($role->is_default) {
+      UserType::where('id', '!=', $role->id)->update(['is_default' => false]);
+    }
 
-
-  /**
-   * Show user activity logs.
-   */
-  public function activity()
-  {
-    return view('admin.user_management.activity.user_activity');
+    return redirect()->route('admin.users.index')->with('success', 'Role created successfully.');
   }
 
   /**
-   * Show bulk actions / import & export page.
+   * Show a role for editing (modal).
    */
-  public function bulk()
+  public function editRole($id)
   {
-    return view('admin.user_management.bulk.bulk_actions');
+    $role = UserType::findOrFail($id);
+    return view('admin.user_management.modal.roles.edit_role_modal', compact('role'));
+  }
+
+  /**
+   * Update a role.
+   */
+  public function updateRole(Request $request, $id)
+  {
+    $role = UserType::findOrFail($id);
+
+    $request->validate([
+      'type_name'  => "required|string|max:255|unique:user_types,type_name,{$id}",
+      'description'=> 'nullable|string|max:500',
+      'is_default' => 'nullable|boolean',
+    ]);
+
+    $role->update([
+      'type_name'  => $request->type_name,
+      'description'=> $request->description,
+      'is_default' => $request->has('is_default'),
+    ]);
+
+    if ($role->is_default) {
+      UserType::where('id', '!=', $role->id)->update(['is_default' => false]);
+    }
+
+    return redirect()->route('admin.users.index')->with('success', 'Role updated successfully.');
+  }
+
+  /**
+   * Delete a role.
+   */
+  public function destroyRole($id)
+  {
+    UserType::findOrFail($id)->delete();
+    return redirect()->route('admin.users.index')->with('success', 'Role deleted successfully.');
   }
 }

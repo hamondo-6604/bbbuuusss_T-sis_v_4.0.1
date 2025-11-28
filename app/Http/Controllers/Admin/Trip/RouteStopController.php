@@ -13,13 +13,17 @@ class RouteStopController extends Controller
   /**
    * Display a listing of route stops.
    */
+
   public function index()
   {
     $routeStops = RouteStop::with(['route.originTerminal', 'route.destinationTerminal', 'stop.city'])
       ->orderBy('route_id')
       ->paginate(10);
 
-    return view('admin.trip_management.route_stops.index', compact('routeStops'));
+    $routes = Route::with(['originTerminal', 'destinationTerminal'])->get();
+    $stops = Stop::all(); // <-- add this
+
+    return view('admin.trip_management.route_stops.index', compact('routeStops', 'routes', 'stops'));
   }
 
   /**

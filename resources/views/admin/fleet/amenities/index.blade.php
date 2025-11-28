@@ -1,79 +1,75 @@
 @extends('layouts.app')
 
+@section('title', 'Amenities')
+
 @section('content')
+  <div class="container-fluid mt-4">
 
-  @include('message')
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">Amenities</h5>
+        <!-- Trigger Create Modal -->
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createAmenityModal">
+          <i class="bi bi-plus-circle"></i> Add Amenity
+        </button>
+      </div>
 
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Amenities</h1>
+      <div class="card-body">
+        @include('message')
 
-    <a href="{{ route('admin.amenities.create') }}"
-       class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition duration-200">
-      <ion-icon name="add-circle-outline" class="align-middle mr-1"></ion-icon>
-      Add Amenity
-    </a>
-  </div>
+        <div class="table-responsive">
+          <table class="table table-striped align-middle text-center">
+            <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Icon</th>
+              <th>Name</th>
+              <th style="width:120px;">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($amenities as $amenity)
+              <tr>
+                <td>{{ $loop->iteration }}</td>
+                <td>
+                  @if($amenity->icon)
+                    <i class="bi {{ $amenity->icon }}"></i>
+                  @else
+                    <span class="text-muted">No icon</span>
+                  @endif
+                </td>
+                <td>{{ $amenity->name }}</td>
+                <td class="d-flex justify-content-center gap-2">
+                  <!-- Edit Button -->
+                  <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editAmenityModal{{ $amenity->id }}">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
 
-  <!-- Card Container -->
-  <div class="bg-white shadow-lg p-6 rounded-xl border border-gray-100">
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse">
-        <thead>
-        <tr class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
-          <th class="px-4 py-3 text-left">#</th>
-          <th class="px-4 py-3 text-left">Icon</th>
-          <th class="px-4 py-3 text-left">Amenity Name</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-        </thead>
-        <tbody class="text-gray-700 text-sm">
+                  <!-- Delete Button -->
+                  <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAmenityModal{{ $amenity->id }}">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="4" class="text-center text-muted">No amenities found.</td>
+              </tr>
+            @endforelse
+            </tbody>
+          </table>
+        </div>
 
-        @forelse($amenities as $amenity)
-          <tr class="border-b hover:bg-gray-50 transition">
-            <td class="px-4 py-3">{{ $loop->iteration }}</td>
-
-            <td class="px-4 py-3">
-              @if($amenity->icon)
-                <ion-icon name="{{ $amenity->icon }}" class="text-xl text-blue-600"></ion-icon>
-              @else
-                <span class="text-gray-400 italic">No icon</span>
-              @endif
-            </td>
-
-            <td class="px-4 py-3 font-medium">{{ $amenity->name }}</td>
-
-            <td class="px-4 py-3 text-center flex justify-center space-x-2">
-
-              <a href="{{ route('admin.amenities.edit', $amenity->id) }}"
-                 class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow-sm transition">
-                <ion-icon name="create-outline"></ion-icon>
-              </a>
-
-              <form method="POST" action="{{ route('admin.amenities.destroy', $amenity->id) }}"
-                    onsubmit="return confirm('Are you sure to delete this amenity?')">
-                @csrf @method('DELETE')
-                <button class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-sm transition">
-                  <ion-icon name="trash-outline"></ion-icon>
-                </button>
-              </form>
-
-            </td>
-          </tr>
-        @empty
-          <tr>
-            <td colspan="4" class="text-center py-4 text-gray-500 italic">
-              No amenities found. Add the first one!
-            </td>
-          </tr>
-        @endforelse
-
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mt-4">
-      {{ $amenities->links() }}
+        <div class="mt-3">
+          {{ $amenities->links() }}
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Include your existing modals -->
+  @include('admin.fleet.amenities.modals.create')
+  @include('admin.fleet.amenities.modals.edit')
+  @include('admin.fleet.amenities.modals.delete')
 
 @endsection

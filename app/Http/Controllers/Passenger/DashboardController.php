@@ -2,19 +2,13 @@
 
 namespace App\Http\Controllers\Passenger;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-  public function dashboard(Request $request)
+  public function index()
   {
-    $user = Auth::user();
-
-    // Passenger dashboard view
-    return view('dashboard.passenger_list', [
-      'user' => $user
-    ]);
+    return view('.dashboard.passenger_list'); // create a view: resources/views/passenger/dashboard.blade.php
   }
 }

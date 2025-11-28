@@ -132,17 +132,27 @@ class BusController extends Controller
 {
   public function index()
   {
-    $buses = Bus::with(['busType', 'layout', 'amenities'])->orderBy('bus_number')->paginate(10);
-    return view('admin.fleet.bus.index', compact('buses'));
+    $buses = Bus::with(['busType', 'layout', 'amenities'])
+      ->orderBy('bus_number')
+      ->paginate(10);
+
+    $busTypes = BusType::all();
+    $layouts = SeatLayout::all();
+    $amenities = Amenity::all(); // <- fetch amenities for the modal
+
+    return view('admin.fleet.bus.index', compact('buses', 'busTypes', 'layouts', 'amenities'));
   }
+
 
   public function create()
   {
+    // Fetch all bus types, seat layouts, and amenities
     $busTypes = BusType::orderBy('type_name')->get();
-    $seatLayouts = SeatLayout::orderBy('layout_name')->get();
+    $layouts = SeatLayout::orderBy('layout_name')->get();  // renamed from $seatLayouts to $layouts
     $amenities = Amenity::orderBy('name')->get();
 
-    return view('admin.fleet.bus.create', compact('busTypes', 'seatLayouts', 'amenities'));
+    // Pass them to the modal view
+    return view('admin.fleet.bus.modals.create', compact('busTypes', 'layouts', 'amenities'));
   }
 
   public function store(Request $request)
@@ -174,7 +184,7 @@ class BusController extends Controller
 
     $bus->load('amenities');
 
-    return view('admin.fleet.bus.edit', compact('bus', 'busTypes', 'seatLayouts', 'amenities'));
+    return view('admin.fleet.bus.modals.edit', compact('bus', 'busTypes', 'seatLayouts', 'amenities'));
   }
 
   public function update(Request $request, Bus $bus)

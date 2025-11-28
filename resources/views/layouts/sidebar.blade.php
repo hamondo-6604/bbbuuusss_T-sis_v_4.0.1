@@ -1,4 +1,4 @@
-<div class="navigation">
+<div class="dash-navigation">
   <ul>
 
     <!-- Logo -->
@@ -29,7 +29,13 @@
         </a>
         <ul class="submenu">
           <li><a href="{{ route('admin.buses.index') }}"><ion-icon name="list-outline"></ion-icon>All Buses</a></li>
-          <li><a href="{{ route('admin.buses.create') }}"><ion-icon name="add-circle-outline"></ion-icon>Add Bus</a></li>
+          <!-- UPDATED "Add Bus" -->
+          <li>
+            <a id="sidebarAddBus" href="{{ route('admin.buses.index') }}?openCreate=1">
+              <ion-icon name="add-circle-outline"></ion-icon>
+              Add Bus
+            </a>
+          </li>
           <li><a href="{{ route('admin.bus-types.index') }}"><ion-icon name="options-outline"></ion-icon>Bus Types</a></li>
           <li><a href="{{ route('admin.seat-layouts.index') }}"><ion-icon name="grid-outline"></ion-icon>Seat Layouts</a></li>
           <li><a href="{{ route('admin.amenities.index') }}"><ion-icon name="sparkles-outline"></ion-icon>Amenities</a></li>
@@ -100,12 +106,12 @@
         </a>
       </li>
 
-      <li>
-        <a href="{{ route('user.search') }}">
-          <span class="icon"><ion-icon name="search-outline"></ion-icon></span>
-          <span class="title">Search Trip</span>
-        </a>
-      </li>
+{{--      <li>--}}
+{{--        <a href="{{ route('user.search') }}">--}}
+{{--          <span class="icon"><ion-icon name="search-outline"></ion-icon></span>--}}
+{{--          <span class="title">Search Trip</span>--}}
+{{--        </a>--}}
+{{--      </li>--}}
 
       <li>
         <a href="{{ route('user.settings') }}">

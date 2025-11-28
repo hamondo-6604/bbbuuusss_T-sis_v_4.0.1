@@ -46,4 +46,15 @@ class Booking extends Model
   {
     return $this->belongsTo(Schedule::class);
   }
+
+  // Add this relationship to fix the error
+  public function seats()
+  {
+    return $this->belongsToMany(Seat::class, 'booking_seats')->withPivot('status');
+  }
+
+  public function payments()
+  {
+    return $this->hasMany(Payment::class);
+  }
 }

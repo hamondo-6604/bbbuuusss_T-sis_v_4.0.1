@@ -5,103 +5,150 @@ namespace App\Http\Controllers\Admin\Booking;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
+use App\Models\User;
+use App\Models\Schedule;
+use App\Models\Seat;
+use App\Models\BookingSeat;
+use Illuminate\Support\Str;
+use DB;
 
 class BookingController extends Controller
 {
-    // List all bookings
-    public function index()
-    {
-        $bookings = Booking::latest()->paginate(20);
-        return view('admin.booking_management.booking.index', compact('bookings'));
-    }
+  /**
+   * Display a listing of bookings.
+   */
+  public function index()
+  {
+    $bookings = Booking::with(['user', 'schedule.route', 'schedule.bus', 'seats.seatType'])
+      ->latest()
+      ->paginate(10);
 
-    // Show form to create a booking
-    public function create()
-    {
-        return view('admin.booking_management.booking.create');
-    }
+    $users = User::where('status', 'active')->get();
+    $schedules = Schedule::with('route', 'bus')->where('status', 'active')->get(); // <-- add this
 
-    // Store new booking
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'bus_id' => 'required|exists:buses,id',
-            'seat_number' => 'nullable|string',
-            'seat_type' => 'nullable|string',
-            'status' => 'required|in:pending,confirmed,cancelled,completed',
-            'departure_time' => 'nullable|date',
-            'arrival_time' => 'nullable|date',
-            'amount_paid' => 'nullable|numeric',
-            'payment_status' => 'nullable|string',
+    return view('admin.booking.index', compact('bookings', 'users', 'schedules'));
+  }
+
+  /**
+   * Show the form for creating a new booking.
+   */
+  public function create()
+  {
+    $users = User::where('status','active')->get();
+    $schedules = Schedule::with('route', 'bus')->where('status','active')->get();
+    $seats = Seat::with('seatType')->where('status','active')->get();
+
+    return view('admin.booking.create', compact('users','schedules','seats'));
+  }
+
+  /**
+   * Store a newly created booking in storage.
+   */
+  public function store(Request $request)
+  {
+    $request->validate([
+      'user_id' => 'required|exists:users,id',
+      'schedule_id' => 'required|exists:schedules,id',
+      'seats' => 'required|array|min:1',
+      'seats.*' => 'exists:seats,id',
+      'total_amount' => 'required|numeric|min:0',
+      'status' => 'required|in:pending,confirmed,cancelled',
+    ]);
+
+    DB::transaction(function() use ($request) {
+      $booking = Booking::create([
+        'id' => Str::uuid(),
+        'user_id' => $request->user_id,
+        'schedule_id' => $request->schedule_id,
+        'booking_date' => now(),
+        'total_amount' => $request->total_amount,
+        'status' => $request->status,
+      ]);
+
+      // Attach seats
+      foreach($request->seats as $seatId) {
+        BookingSeat::create([
+          'booking_id' => $booking->id,
+          'seat_id' => $seatId,
+          'status' => 'booked'
         ]);
+      }
+    });
 
-        Booking::create($data);
+    return redirect()->route('admin.bookings.index')
+      ->with('success', 'Booking created successfully.');
+  }
 
-        return redirect()->route('admin.bookings.index')->with('success', 'Booking created successfully.');
-    }
+  /**
+   * Show the form for editing a booking.
+   */
+  public function edit($id)
+  {
+    $booking = Booking::with('seats')->findOrFail($id);
+    $users = User::where('status','active')->get();
+    $schedules = Schedule::with('route', 'bus')->where('status','active')->get();
+    $seats = Seat::with('seatType')->where('status','active')->get();
 
-    // Show single booking
-    public function show(Booking $booking)
-    {
-        return view('admin.booking_management.booking.show', compact('booking'));
-    }
+    return view('admin.booking.edit', compact('booking','users','schedules','seats'));
+  }
 
-    // Show form to edit booking
-    public function edit(Booking $booking)
-    {
-        return view('admin.booking_management.booking.edit', compact('booking'));
-    }
+  /**
+   * Update a booking in storage.
+   */
+  public function update(Request $request, $id)
+  {
+    $booking = Booking::findOrFail($id);
 
-    // Update booking
-    public function update(Request $request, Booking $booking)
-    {
-        $data = $request->validate([
-            'seat_number' => 'nullable|string',
-            'seat_type' => 'nullable|string',
-            'status' => 'required|in:pending,confirmed,cancelled,completed',
-            'departure_time' => 'nullable|date',
-            'arrival_time' => 'nullable|date',
-            'amount_paid' => 'nullable|numeric',
-            'payment_status' => 'nullable|string',
-        ]);
+    $request->validate([
+      'user_id' => 'required|exists:users,id',
+      'schedule_id' => 'required|exists:schedules,id',
+      'seats' => 'required|array|min:1',
+      'seats.*' => 'exists:seats,id',
+      'total_amount' => 'required|numeric|min:0',
+      'status' => 'required|in:pending,confirmed,cancelled',
+    ]);
 
-        $booking->update($data);
+    DB::transaction(function() use ($request, $booking) {
+      $booking->update([
+        'user_id' => $request->user_id,
+        'schedule_id' => $request->schedule_id,
+        'total_amount' => $request->total_amount,
+        'status' => $request->status,
+      ]);
 
-        return redirect()->route('admin.bookings.index')->with('success', 'Booking updated successfully.');
-    }
+      // Sync seats
+      $booking->seats()->sync($request->seats);
+    });
 
-    // Delete booking
-    public function destroy(Booking $booking)
-    {
-        $booking->delete();
-        return redirect()->route('admin.bookings.index')->with('success', 'Booking deleted successfully.');
-    }
+    return redirect()->route('admin.bookings.index')
+      ->with('success', 'Booking updated successfully.');
+  }
 
-    // Status views
-    public function pending()
-    {
-        $pendingBookings = Booking::where('status', 'pending')->latest()->paginate(20);
-        return view('admin.booking_management.status.pending', compact('pendingBookings'));
-    }
+  /**
+   * Remove a booking from storage.
+   */
+  public function destroy($id)
+  {
+    $booking = Booking::findOrFail($id);
 
-    public function completed()
-    {
-        $completedBookings = Booking::where('status', 'completed')->latest()->paginate(20);
-        return view('admin.booking_management.status.completed', compact('completedBookings'));
-    }
+    DB::transaction(function() use ($booking) {
+      // Delete booking seats
+      $booking->seats()->detach();
+      // Delete booking
+      $booking->delete();
+    });
 
-    public function cancelled()
-    {
-        $cancelledBookings = Booking::where('status', 'cancelled')->latest()->paginate(20);
-        return view('admin.booking_management.status.cancelled', compact('cancelledBookings'));
-    }
+    return redirect()->route('admin.bookings.index')
+      ->with('success', 'Booking deleted successfully.');
+  }
 
+  /**
+   * Show booking details (optional).
+   */
+  public function show($id)
+  {
+    $booking = Booking::with(['user', 'schedule.route.originTerminal', 'schedule.route.destinationTerminal', 'seats.seatType'])->findOrFail($id);
 
-    // Notifications placeholder
-    public function notifications()
-    {
-        // Implement logic to list or resend booking notifications
-        return view('admin.booking_management.booking.notifications');
-    }
+    return view('admin.booking.show', compact('booking'));
+  }
 }

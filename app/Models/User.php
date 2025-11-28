@@ -12,7 +12,6 @@ class User extends Authenticatable
 {
   use HasFactory, SoftDeletes;
 
-  // UUID primary key
   protected $keyType = 'string';
   public $incrementing = false;
 
@@ -25,26 +24,33 @@ class User extends Authenticatable
     'status'
   ];
 
-  // Automatically generate UUID when creating a user
+  protected $hidden = [
+    'password',
+    'remember_token'
+  ];
+
   protected static function booted()
   {
     static::creating(function ($user) {
-      // Generate UUID
       if (!$user->id) {
         $user->id = (string) Str::uuid();
       }
 
-      // Hash password if not already hashed
-      if (!empty($user->password_hash) && !Str::startsWith($user->password_hash, '$2y$')) {
-        $user->password_hash = Hash::make($user->password_hash);
+      if (!empty($user->password) && !Str::startsWith($user->password, '$2y$')) {
+        $user->password = Hash::make($user->password);
       }
 
-      // Assign default user type if not provided
       if (!$user->user_type_id) {
-        $defaultType = UserType::where('type_name', 'customer')->first();
+        $defaultType = UserType::where('is_default', true)->first();
         if ($defaultType) {
           $user->user_type_id = $defaultType->id;
         }
+      }
+    });
+
+    static::updating(function ($user) {
+      if ($user->isDirty('password') && !Str::startsWith($user->password, '$2y$')) {
+        $user->password = Hash::make($user->password);
       }
     });
   }
@@ -58,5 +64,21 @@ class User extends Authenticatable
   public function bookings()
   {
     return $this->hasMany(Booking::class);
+  }
+
+  // Accessors
+  public function getRoleAttribute()
+  {
+    return $this->userType ? $this->userType->type_name : null;
+  }
+
+  public function getStatusBadgeAttribute()
+  {
+    return match($this->status) {
+      'active' => '<span class="badge bg-success">Active</span>',
+      'inactive' => '<span class="badge bg-secondary">Inactive</span>',
+      'banned' => '<span class="badge bg-danger">Banned</span>',
+      default => '<span class="badge bg-light text-dark">Unknown</span>',
+    };
   }
 }

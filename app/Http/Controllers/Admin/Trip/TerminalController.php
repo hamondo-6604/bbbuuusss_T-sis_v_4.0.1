@@ -15,7 +15,8 @@ class TerminalController extends Controller
   public function index()
   {
     $terminals = Terminal::with('city')->paginate(10);
-    return view('admin.trip_management.terminals.index', compact('terminals'));
+    $cities = City::orderBy('name')->paginate(10); // <-- paginate here
+    return view('admin.trip_management.terminals.index', compact('terminals', 'cities'));
   }
 
   /**

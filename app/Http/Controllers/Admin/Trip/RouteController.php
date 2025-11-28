@@ -15,7 +15,8 @@ class RouteController extends Controller
   public function index()
   {
     $routes = Route::with(['originTerminal', 'destinationTerminal'])->paginate(10);
-    return view('admin.trip_management.routes.index', compact('routes'));
+    $terminals = Terminal::all(); // load terminals
+    return view('admin.trip_management.routes.index', compact('routes', 'terminals'));
   }
 
   /**

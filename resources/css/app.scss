@@ -1,33 +1,3 @@
-// abstracts - variables, mixins, functions
-@use 'abstracts/variable' as *;
-@use 'abstracts/mixins' as *;
-@use 'abstracts/function' as *;
 
-// base styles - reset, typography, utilities
-@use 'base/reset' as *;
-@use 'base/typography' as *;
-@use 'base/utilities' as *;
-
-// components - buttons, alerts, cards, forms
-@use 'components/alerts' as *;
-@use 'components/buttons' as *;
-@use 'components/cards' as *;
-@use 'components/forms' as *;
-@use 'components/tables' as *;
-
-// layout - header, footer, sidebar, navbar
-@use 'layout/footer' as *;
-@use 'layout/header' as *;
-@use 'layout/sidebar' as *;
-@use 'layout/navbar' as *;
-
-// pages - admin bus, user dashboard, auth, etc.
-// For example, if you want to include bus admin pages styles globally
-@use 'pages/admin/bus_management/bus/bus' as *;
-@use 'pages/admin/dashboard' as *;
-@use 'pages/admin/bus_management/seat_layout/seat-layout' as *;
-@use 'pages/user/dashboard' as *;
-@use 'pages/auth' as *;
-
-// themes (if any)
-@use 'themes/default' as *; // replace with actual theme files if you have them
+@import "bootstrap/scss/bootstrap";
+@import "../scss/dashboard";

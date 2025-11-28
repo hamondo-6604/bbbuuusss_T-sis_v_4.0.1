@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('content')
+{{--@section('content')
 
 <div class="cardBox">
     <div class="card">
@@ -44,4 +44,4 @@
     </div>
 </div>
 
-@endsection
+@endsection--}}
