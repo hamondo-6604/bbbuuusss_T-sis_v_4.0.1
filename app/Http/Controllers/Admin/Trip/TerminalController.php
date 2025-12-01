@@ -25,7 +25,7 @@ class TerminalController extends Controller
   public function create()
   {
     $cities = City::orderBy('name')->get();
-    return view('admin.trip_management.terminals.create', compact('cities'));
+    return view('admin.trip_management.terminals.modals.create', compact('cities'));
   }
 
   /**
@@ -35,20 +35,23 @@ class TerminalController extends Controller
   {
     $validated = $request->validate([
       'city_id'        => 'required|exists:cities,id',
-      'name'           => 'required|string|max:255',
+      'name'           => 'required|string|max:255|unique:terminals,name,NULL,id,city_id,' . $request->city_id,
       'code'           => 'nullable|string|max:50',
       'address'        => 'nullable|string|max:255',
       'latitude'       => 'nullable|numeric',
       'longitude'      => 'nullable|numeric',
       'contact_phone'  => 'nullable|string|max:50',
       'is_active'      => 'nullable|boolean',
+    ], [
+      // <-- custom error message
+      'name.unique' => 'Terminal already exists in this city.',
     ]);
 
     $validated['is_active'] = $request->has('is_active');
 
     Terminal::create($validated);
 
-    return redirect()->route('terminals.index')
+    return redirect()->route('admin.terminals.index')
       ->with('success', 'Terminal created successfully.');
   }
 
@@ -58,7 +61,7 @@ class TerminalController extends Controller
   public function edit(Terminal $terminal)
   {
     $cities = City::orderBy('name')->get();
-    return view('admin.trip_management.terminals.edit', compact('terminal', 'cities'));
+    return view('admin.trip_management.terminals.modals.edit', compact('terminal', 'cities'));
   }
 
   /**
@@ -68,7 +71,7 @@ class TerminalController extends Controller
   {
     $validated = $request->validate([
       'city_id'        => 'required|exists:cities,id',
-      'name'           => 'required|string|max:255',
+      'name'           => 'required|string|max:255|unique:terminals,name,' . $terminal->id . ',id,city_id,' . $request->city_id,
       'code'           => 'nullable|string|max:50',
       'address'        => 'nullable|string|max:255',
       'latitude'       => 'nullable|numeric',
@@ -81,9 +84,10 @@ class TerminalController extends Controller
 
     $terminal->update($validated);
 
-    return redirect()->route('terminals.index')
+    return redirect()->route('admin.terminals.index')
       ->with('success', 'Terminal updated successfully.');
   }
+
 
   /**
    * Delete terminal.
@@ -92,7 +96,7 @@ class TerminalController extends Controller
   {
     $terminal->delete();
 
-    return redirect()->route('terminals.index')
+    return redirect()->route('admin.terminals.index')
       ->with('success', 'Terminal deleted successfully.');
   }
 }

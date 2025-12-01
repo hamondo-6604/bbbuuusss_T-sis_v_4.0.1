@@ -25,8 +25,10 @@ class BookingController extends Controller
 
     $users = User::where('status', 'active')->get();
     $schedules = Schedule::with('route', 'bus')->where('status', 'active')->get(); // <-- add this
+    $seats = Seat::with('seatType')->where('status', 'active')->get();
 
-    return view('admin.booking.index', compact('bookings', 'users', 'schedules'));
+    return view('admin.booking.index', compact('bookings', 'users', 'schedules', 'seats'));
+
   }
 
   /**
@@ -38,7 +40,7 @@ class BookingController extends Controller
     $schedules = Schedule::with('route', 'bus')->where('status','active')->get();
     $seats = Seat::with('seatType')->where('status','active')->get();
 
-    return view('admin.booking.create', compact('users','schedules','seats'));
+    return view('admin.booking.modals.create', compact('users','schedules','seats'));
   }
 
   /**
@@ -89,7 +91,7 @@ class BookingController extends Controller
     $schedules = Schedule::with('route', 'bus')->where('status','active')->get();
     $seats = Seat::with('seatType')->where('status','active')->get();
 
-    return view('admin.booking.edit', compact('booking','users','schedules','seats'));
+    return view('admin.booking.modals.edit', compact('booking','users','schedules','seats'));
   }
 
   /**
@@ -149,6 +151,6 @@ class BookingController extends Controller
   {
     $booking = Booking::with(['user', 'schedule.route.originTerminal', 'schedule.route.destinationTerminal', 'seats.seatType'])->findOrFail($id);
 
-    return view('admin.booking.show', compact('booking'));
+    return view('admin.booking.modals.show', compact('booking'));
   }
 }

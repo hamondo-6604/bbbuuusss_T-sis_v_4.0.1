@@ -64,7 +64,7 @@
               </tr>
 
               <!-- Cancel Booking Modal -->
-              @include('passenger.bookings.modals.cancel', ['booking' => $booking])
+              @include('passengers.bookings.modals.cancel', ['booking' => $booking])
 
             @empty
               <tr>

@@ -34,7 +34,7 @@
             @forelse($bookings as $booking)
               <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $booking->user->full_name ?? 'N/A' }}</td>
+                <td>{{ $booking->user->name ?? 'N/A' }}</td>
                 <td>
                   {{ $booking->schedule->route->originTerminal->name ?? 'N/A' }}
                   → {{ $booking->schedule->route->destinationTerminal->name ?? 'N/A' }}

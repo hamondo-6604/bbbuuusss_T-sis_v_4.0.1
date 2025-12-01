@@ -88,7 +88,7 @@ class BusTypeController extends Controller
 
   public function create()
   {
-    return view('admin.fleet.bus-types.create');
+    return view('admin.fleet.bus-types.modals.create');
   }
 
   public function store(Request $request)
@@ -107,7 +107,7 @@ class BusTypeController extends Controller
 
   public function edit(BusType $busType)
   {
-    return view('admin.fleet.bus-types.edit', compact('busType'));
+    return view('admin.fleet.bus-types.modals.edit', compact('busType'));
   }
 
   public function update(Request $request, BusType $busType)

@@ -124,11 +124,11 @@ Route::prefix('trip-management')->group(function () {
   ]);
 
   Route::resource('route-stops', RouteStopController::class)->names([
-    'index'   => 'route-stops.index',
-    'create'  => 'route-stops.create',
-    'store'   => 'route-stops.store',
-    'edit'    => 'route-stops.edit',
-    'update'  => 'route-stops.update',
+    'index' => 'route-stops.index',
+    'create' => 'route-stops.create',
+    'store' => 'route-stops.store',
+    'edit' => 'route-stops.edit',
+    'update' => 'route-stops.update',
     'destroy' => 'route-stops.destroy',
   ]);
 
