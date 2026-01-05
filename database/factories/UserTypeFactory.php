@@ -11,9 +11,12 @@ class UserTypeFactory extends Factory
 
   public function definition()
   {
+    $types = ['Admin','Customer','Staff','Driver'];
+
     return [
-      'type_name' => $this->faker->unique()->randomElement(['Admin','Customer','Staff','Driver']),
+      'type_name' => $this->faker->unique()->randomElement($types),
       'description' => $this->faker->sentence,
+      // is_default is handled by model booted(), no need to set here
     ];
   }
 }

@@ -9,13 +9,18 @@ class UserTypeSeeder extends Seeder
 {
   public function run(): void
   {
-    $types = ['admin','customer','staff','driver'];
+    $types = [
+      'admin' => 'Administrator role',
+      'customer' => 'Customer role',
+      'staff' => 'Staff role',
+      'driver' => 'Driver role',
+    ];
 
-    foreach ($types as $type) {
-      UserType::create([
-        'type_name' => $type,
-        'description' => "$type role",
-      ]);
+    foreach ($types as $type => $description) {
+      UserType::updateOrCreate(
+        ['type_name' => $type],
+        ['description' => $description]
+      );
     }
   }
 }
